@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 03:56:00 JST +0900"
+updated_at: "2026-08-09 04:05:17 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST]
 related_specs: [SPEC-0001]
@@ -73,10 +73,9 @@ Source docs:
 
 ## Roadmap Position
 
-The initial package API is implemented. Automated closeout can prove that it
-compiles and that configured AppKit properties match the contract; the next
-meaningful evidence is a physical Agent Commander consumer, followed by the
-independent SpriteKit falsification consumer.
+The initial package API and automated closeout baseline are implemented. The
+next meaningful evidence is a physical Agent Commander consumer, followed by
+the independent SpriteKit falsification consumer.
 
 See [ROADMAP.md](ROADMAP.md) and
 [PLAN-0001](../product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md).

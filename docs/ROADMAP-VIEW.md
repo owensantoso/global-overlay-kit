@@ -2,7 +2,7 @@
 type: generated-view
 title: Roadmap View
 status: generated
-updated_at: "2026-08-09 04:03:12 JST +0900"
+updated_at: "2026-08-09 04:06:01 JST +0900"
 ---
 
 # Roadmap View
@@ -14,4 +14,4 @@ Generated plan-order view. `PLAN-*` numbering and `sequence` frontmatter should 
 | Sequence | Plan | Plan Name | Title | Status | Domain | Lane | After | Before | Path |
 |---|---|---|---|---|---|---|---|---|---|
 | 0.0 | PLAN-0000 | PLAN-0000-plan-title | <Plan title> | draft | product | product |  |  | `product/plans/PLAN-0000-plan-title/PLAN-0000-plan-title.md` |
-| 1.0 | PLAN-0001 | PLAN-0001-clean-room-overlay-host-mvp | Clean-Room Overlay Host MVP | in_progress | product | product |  |  | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |
+| 1.0 | PLAN-0001 | PLAN-0001-clean-room-overlay-host-mvp | Clean-Room Overlay Host MVP | completed | product | product |  |  | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |

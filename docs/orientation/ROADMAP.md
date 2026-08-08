@@ -4,7 +4,7 @@ title: Roadmap
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 03:56:00 JST +0900"
+updated_at: "2026-08-09 04:05:17 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST]
 related_specs: [SPEC-0001]
@@ -34,7 +34,7 @@ overlay before adding coordination or renderer-specific capability.
 
 | Band | Status | Why it sits here |
 |---|---|---|
-| Clean-room package foundation | Implemented; automated closeout pending | Establishes the smallest reusable seam |
+| Clean-room package foundation | Implemented; automated baseline passed | Establishes the smallest reusable seam |
 | Agent Commander consumer | Not started | Proves the actual message-overlay need |
 | SpriteKit falsification consumer | Captured | Tests renderer neutrality with radically different content |
 | Public release hardening | Not started | Should follow real consumer and physical evidence |
@@ -52,8 +52,9 @@ owns the initial host:
 - frame and selected-screen placement
 - focused contract tests and continuity docs
 
-The source is present. Closeout requires the documented automated baseline; it
-does not turn unobserved physical behavior into evidence.
+The source is present and the documented automated baseline passed on
+2026-08-09. That result does not turn unobserved physical behavior into
+evidence.
 
 ## 2. First Real Consumer: Agent Commander
 

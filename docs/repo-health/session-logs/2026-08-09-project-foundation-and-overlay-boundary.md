@@ -2,11 +2,11 @@
 type: session-log
 title: Project Foundation And Overlay Boundary
 domain: repo-health
-status: in_progress
+status: completed
 created_at: "2026-08-09 03:45:00 JST +0900"
-updated_at: "2026-08-09 03:58:00 JST +0900"
+updated_at: "2026-08-09 04:05:17 JST +0900"
 started_at: "2026-08-09 03:45:00 JST +0900"
-ended_at:
+ended_at: "2026-08-09 04:05:17 JST +0900"
 timezone: "JST +0900"
 participants:
   - Human
@@ -19,7 +19,8 @@ related_adrs: [ADR-0001]
 related_todos: []
 related_issues: []
 related_prs: []
-commits: []
+commits:
+  - 6ea6bc1
 ---
 
 # 2026-08-09 - Project Foundation And Overlay Boundary
@@ -77,11 +78,22 @@ the full Agent Continuity scaffold.
   - Agent Continuity ID allocation and document creation commands.
   - Read-only source and package inspection.
   - Primary-source GitHub/Apple research.
-- Closeout commands: pending final docs generation, checks, links, smoke, and
-  package baseline.
+- `./run check` passed after correcting the scaffold smoke test's stale command
+  path. It built the package, ran three focused Swift tests, regenerated and
+  checked structured docs, checked local links, passed the continuity smoke
+  test, and checked diff whitespace.
+- `swift build -c release` and `swift package dump-package` also passed.
 - Manual checks: none.
 - Not run: physical overlay, visual, accessibility, multi-display, performance,
   or remote-CI verification.
+
+## Tooling Correction
+
+The complete scaffold installed `scripts/agent-continuity-docs`, while its
+smoke test still invoked an absent `scripts/agent-continuity` wrapper. The
+failure reproduced consistently. Comparison with the working Agent Commander
+scaffold confirmed the stale path and command shape; the test now calls the
+installed docs tool directly and passes.
 
 ## Follow-Ups
 

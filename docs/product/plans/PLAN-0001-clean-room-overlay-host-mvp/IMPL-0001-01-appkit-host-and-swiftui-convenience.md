@@ -3,13 +3,13 @@ type: implementation-brief
 id: IMPL-0001-01
 title: AppKit Host and SwiftUI Convenience
 domain: product
-status: in_progress
+status: completed
 created_at: "2026-08-09 03:50:32 JST +0900"
-updated_at: "2026-08-09 03:56:00 JST +0900"
+updated_at: "2026-08-09 04:05:11 JST +0900"
 planned_execution_start: "2026-08-09 03:45:00 JST +0900"
 planned_execution_end:
 actual_execution_start: "2026-08-09 03:45:00 JST +0900"
-actual_execution_end:
+actual_execution_end: "2026-08-09 04:05:17 JST +0900"
 parent_plan: PLAN-0001
 task_refs:
   - PLAN-0001-task-2
@@ -31,7 +31,7 @@ linked_paths:
   - Tests/GlobalOverlayKitTests/GlobalOverlayTests.swift
 repo_state:
   based_on_commit:
-  last_reviewed_commit:
+  last_reviewed_commit: 6ea6bc1f6febe20f156ad045b9e5b0b6ae40a4ae
 ---
 
 # IMPL-0001-01 - AppKit Host And SwiftUI Convenience

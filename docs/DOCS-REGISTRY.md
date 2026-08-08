@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-08-09 04:03:12 JST +0900"
+updated_at: "2026-08-09 04:06:01 JST +0900"
 ---
 
 # Docs Registry
@@ -22,10 +22,10 @@ updated_at: "2026-08-09 04:03:12 JST +0900"
 | IDEA-0000 | idea | <Idea Title> | captured | `product/ideas/IDEA-0000-idea-title.md` |
 | IDEA-0001 | idea | SpriteKit Desktop World Falsification Consumer | captured | `product/ideas/IDEA-0001-spritekit-desktop-world-falsification-consumer.md` |
 | IMPL-0000-00 | implementation-brief | <Implementation brief title> | draft | `product/plans/PLAN-0000-plan-title/IMPL-0000-00-implementation-brief-title.md` |
-| IMPL-0001-01 | implementation-brief | AppKit Host and SwiftUI Convenience | in_progress | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/IMPL-0001-01-appkit-host-and-swiftui-convenience.md` |
+| IMPL-0001-01 | implementation-brief | AppKit Host and SwiftUI Convenience | completed | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/IMPL-0001-01-appkit-host-and-swiftui-convenience.md` |
 | LRN-0000 | learning | Learning Title | active | `decisions/learnings/LRN-0000-learning-title.md` |
 | PLAN-0000 | plan | <Plan title> | draft | `product/plans/PLAN-0000-plan-title/PLAN-0000-plan-title.md` |
-| PLAN-0001 | plan | Clean-Room Overlay Host MVP | in_progress | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |
+| PLAN-0001 | plan | Clean-Room Overlay Host MVP | completed | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |
 | QST-0000 | question | Question Title | open | `decisions/questions/QST-0000-question-title.md` |
 | RSCH-0001 | research-survey | Global Overlay Prior Art and Package Boundary | completed | `research/RSCH-0001-global-overlay-prior-art-and-package-boundary.md` |
 | SPEC-0000 | spec | <Spec title> | draft | `product/specs/SPEC-0000-spec-title.md` |

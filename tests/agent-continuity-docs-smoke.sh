@@ -2,16 +2,20 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_continuity="$repo_root/scripts/agent-continuity"
+agent_continuity="$repo_root/scripts/agent-continuity-docs"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 docs_root="$tmpdir/docs"
-repo_commit="$(git -C "$repo_root" rev-parse HEAD)"
+if repo_commit="$(git -C "$repo_root" rev-parse --verify HEAD 2>/dev/null)"; then
+  :
+else
+  repo_commit=""
+fi
 mkdir -p "$docs_root/architecture/areas"
 
 run_meta() {
-  "$agent_continuity" docs --root "$docs_root" "$@"
+  "$agent_continuity" --root "$docs_root" "$@"
 }
 
 require_file() {
