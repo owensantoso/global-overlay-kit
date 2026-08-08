@@ -4,9 +4,9 @@ title: Project Foundation And Overlay Boundary
 domain: repo-health
 status: completed
 created_at: "2026-08-09 03:45:00 JST +0900"
-updated_at: "2026-08-09 04:07:58 JST +0900"
+updated_at: "2026-08-09 04:11:06 JST +0900"
 started_at: "2026-08-09 03:45:00 JST +0900"
-ended_at: "2026-08-09 04:07:58 JST +0900"
+ended_at: "2026-08-09 04:11:06 JST +0900"
 timezone: "JST +0900"
 participants:
   - Human
@@ -83,9 +83,13 @@ the full Agent Continuity scaffold.
   checked structured docs, checked local links, passed the continuity smoke
   test, and checked diff whitespace.
 - `swift build -c release` and `swift package dump-package` also passed.
+- The first public GitHub Actions run passed build/test and documentation jobs
+  on macOS. Its deprecation warning identified `actions/checkout@v4`; the
+  workflow was updated to the current official major, `actions/checkout@v7`,
+  for a clean follow-up run.
 - Manual checks: none.
-- Not run: physical overlay, visual, accessibility, multi-display, performance,
-  or remote-CI verification.
+- Not run: physical overlay, visual, accessibility, multi-display, or
+  performance verification.
 
 ## Tooling Correction
 

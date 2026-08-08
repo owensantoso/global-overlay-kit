@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 04:07:58 JST +0900"
+updated_at: "2026-08-09 04:11:06 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST]
 related_specs: [SPEC-0001]
@@ -39,6 +39,8 @@ Mac.
   and frame updates.
 - The root `./run` command provides build, test, documentation, and combined
   check paths. GitHub Actions runs package tests and documentation checks.
+- The first public GitHub Actions run passed its package and documentation jobs
+  on macOS after the repository was pushed.
 
 ## Not Yet Proven Or Built
 
