@@ -1,0 +1,366 @@
+{
+  "files": [
+    {
+      "ownership": "project-owned-after-install",
+      "path": "AGENTS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/AREAS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/AUDITS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/CONCEPTS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/DOCS-REGISTRY.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/EXPLAINERS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/HEALTH.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/IDEAS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/LEARNINGS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/QUESTIONS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/ROADMAP-VIEW.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/SPECS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/TODOS.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/architecture/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/architecture/areas/AREA-EXAMPLE.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/adr/ADR-0000-decision-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/adr/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/learnings/LRN-0000-learning-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/learnings/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/questions/QST-0000-question-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/decisions/questions/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/marketing/plans/marketing-plan.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/operations/checklists/release-checklist.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/ARCHITECTURE.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/CURRENT_STATE.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/ONBOARDING.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/ROADMAP.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/explainers/EXPL-0000-explainer-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/orientation/explainers/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/concepts/CONC-0000-concept-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/concepts/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/ideas/IDEA-0000-idea-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/plans/PLAN-0000-plan-title/IMPL-0000-00-implementation-brief-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/plans/PLAN-0000-plan-title/PLAN-0000-plan-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/plans/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/specs/SPEC-0000-spec-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/product/specs/feature-spec-compatibility.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/AUDT-0000-repo-health-audit.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/audit-profile.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/codebase-map.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/data-seams.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/debugging/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/debugging/diagnostics/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/debugging/diagnostics/templates/diagnostic-record-template.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/evaluations/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/evaluations/templates/evaluation-template.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/prompts/reusable-implementer-handoff-prompt.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/session-logs/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/session-logs/YYYY-MM-DD-session-title.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/state/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/testing-guide.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/research/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/research/notes/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/research/notes/research-note.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/research/templates/research-survey-template.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/README.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/accessibility.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/architecture.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/audit-guide-template.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/docs-health.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/ontology.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/paper-trail.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/performance.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/privacy.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/roadmap-alignment.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/schema.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/security.md"
+    },
+    {
+      "ownership": "project-owned-after-install",
+      "path": "docs/repo-health/audits/guides/test-coverage.md"
+    },
+    {
+      "checksum_sha256": "bd944691119a7018dcbeaadbf01a1997da71d672f6934fc80eee27178aa7ac10",
+      "mode": "755",
+      "ownership": "agent-continuity-owned",
+      "path": "scripts/agent-continuity-docs"
+    },
+    {
+      "checksum_sha256": "ddfa63964814e8d391dcc5a67e7e0fabc3a8c971e462678f47b80cf5844e967d",
+      "mode": "755",
+      "ownership": "agent-continuity-owned",
+      "path": "tests/agent-continuity-docs-smoke.sh"
+    }
+  ],
+  "generated_views": [
+    {
+      "checksum_sha256": "119b07e6b8e5e517c4844a46bcdec408d5fdce38a9469ee362b5321815c0b622",
+      "generator": "agent-continuity docs update",
+      "path": "docs/AREAS.md"
+    },
+    {
+      "checksum_sha256": "2d0f32e61d623a271a5a5e4c4815d3f204682e9d641dbd47702258c0b5ccf833",
+      "generator": "agent-continuity docs update",
+      "path": "docs/AUDITS.md"
+    },
+    {
+      "checksum_sha256": "63a68962d6c67bae11cdfcfaf407a710caffbc0ae203234bbdbd6a18814d3a4c",
+      "generator": "agent-continuity docs update",
+      "path": "docs/CONCEPTS.md"
+    },
+    {
+      "checksum_sha256": "9ac0b98592459beb093b521fd80a97f572513fd2f59fa50ccebc8d3ca7a418eb",
+      "generator": "agent-continuity docs update",
+      "path": "docs/DOCS-REGISTRY.md"
+    },
+    {
+      "checksum_sha256": "1deb6eda237cda1bacd14afeb1ba5584cf9baed3409f4aa0a97823e92ebe2aa7",
+      "generator": "agent-continuity docs update",
+      "path": "docs/EXPLAINERS.md"
+    },
+    {
+      "checksum_sha256": "bc0743aef6cb6ff62ed50432e6f8c1c850314552c865fc257ffa3365f0a7816d",
+      "generator": "agent-continuity docs update",
+      "path": "docs/IDEAS.md"
+    },
+    {
+      "checksum_sha256": "277111d31e3ae47e256c9158459f0a6c5f59a34fc80026e4784e2c067f33045f",
+      "generator": "agent-continuity docs update",
+      "path": "docs/LEARNINGS.md"
+    },
+    {
+      "checksum_sha256": "855d0eb5a4d176c3a14babb8045bad73641d4c883c2dd6da3d343384e5a1a379",
+      "generator": "agent-continuity docs update",
+      "path": "docs/QUESTIONS.md"
+    },
+    {
+      "checksum_sha256": "462245ee0fc3587d5f5f1393c0f4799fc48dbabc4aed1d50f8c1017f258cbb52",
+      "generator": "agent-continuity docs update",
+      "path": "docs/ROADMAP-VIEW.md"
+    },
+    {
+      "checksum_sha256": "23985606d1e1ed180e0f70fedbf0254daa883a171043c14054b4e976ffef8459",
+      "generator": "agent-continuity docs update",
+      "path": "docs/SPECS.md"
+    },
+    {
+      "checksum_sha256": "8e40e9551c175f5fabcc4b6539ff7d28548fe5eacd48ed229d0d59c76716ddbe",
+      "generator": "agent-continuity docs update",
+      "path": "docs/TODOS.md"
+    }
+  ],
+  "installed_at": "2026-08-08T18:48:11Z",
+  "optional_components": [
+    "agent-continuity-docs"
+  ],
+  "profile": "complete",
+  "schema_version": 1,
+  "source": {
+    "commit": "9750871c50443d669e20be01e684fa8c1ce8b37b",
+    "path": "/Users/macintoso/Documents/VSCode/agent-continuity",
+    "ref": "main",
+    "repository": "https://github.com/owensantoso/agent-continuity.git"
+  },
+  "updated_at": "2026-08-08T18:48:11Z"
+}

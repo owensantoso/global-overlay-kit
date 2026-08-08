@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Build and test
+        run: swift test
+      - name: Validate documentation
+        run: |
+          scripts/agent-continuity-docs check
+          scripts/agent-continuity-docs check-links
+          tests/agent-continuity-docs-smoke.sh
