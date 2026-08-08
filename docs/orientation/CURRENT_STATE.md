@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 04:05:17 JST +0900"
+updated_at: "2026-08-09 04:07:58 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST]
 related_specs: [SPEC-0001]
@@ -101,9 +101,10 @@ Use:
 ./run check
 ```
 
-The baseline compiles the package, runs focused Swift tests, refreshes and
-checks structured docs, checks local links, runs the continuity smoke test, and
-checks diff whitespace. It does not supply visual, physical, accessibility, or
+The baseline compiles the package, runs focused Swift tests, checks committed
+structured docs, checks local links, runs the continuity smoke test, and checks
+diff whitespace. Use `./run docs` when source-doc changes need generated views
+refreshed. Neither command supplies visual, physical, accessibility, or
 performance evidence.
 
 For the evidence matrix, see [the testing guide](../repo-health/testing-guide.md).

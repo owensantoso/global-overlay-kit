@@ -4,7 +4,7 @@ title: Testing Guide
 domain: repo-health
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 03:56:00 JST +0900"
+updated_at: "2026-08-09 04:07:58 JST +0900"
 owner:
 surface: GlobalOverlayKit Swift package
 areas: [AREA-OVERLAY-HOST]
@@ -38,14 +38,15 @@ From the repository root:
 
 1. `swift build`
 2. `swift test`
-3. structured-doc generation and validation
+3. committed structured-doc validation
 4. local Markdown link validation
 5. the Agent Continuity smoke test
 6. `git diff --check`
 
-GitHub Actions runs `swift test` and the documentation checks on macOS 15 for
-pushes and pull requests. A workflow file existing on disk is not evidence that
-a remote run has passed.
+Use `./run docs` to refresh generated views after changing source docs, then
+commit those outputs before `./run check`. GitHub Actions runs `swift test` and
+the documentation checks on macOS 15 for pushes and pull requests. A workflow
+file existing on disk is not evidence that a remote run has passed.
 
 ## Evidence Matrix
 

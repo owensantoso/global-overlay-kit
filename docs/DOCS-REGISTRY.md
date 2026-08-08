@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-08-09 04:06:01 JST +0900"
+updated_at: "2026-08-09 04:08:14 JST +0900"
 ---
 
 # Docs Registry

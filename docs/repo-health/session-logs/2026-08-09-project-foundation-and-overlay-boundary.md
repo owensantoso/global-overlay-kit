@@ -4,9 +4,9 @@ title: Project Foundation And Overlay Boundary
 domain: repo-health
 status: completed
 created_at: "2026-08-09 03:45:00 JST +0900"
-updated_at: "2026-08-09 04:05:17 JST +0900"
+updated_at: "2026-08-09 04:07:58 JST +0900"
 started_at: "2026-08-09 03:45:00 JST +0900"
-ended_at: "2026-08-09 04:05:17 JST +0900"
+ended_at: "2026-08-09 04:07:58 JST +0900"
 timezone: "JST +0900"
 participants:
   - Human
@@ -94,6 +94,10 @@ smoke test still invoked an absent `scripts/agent-continuity` wrapper. The
 failure reproduced consistently. Comparison with the working Agent Commander
 scaffold confirmed the stale path and command shape; the test now calls the
 installed docs tool directly and passes.
+
+The original `./run check` also regenerated timestamped views on every run,
+making a clean checkout dirty. Generated-view refresh now belongs only to
+`./run docs`; `./run check` validates committed outputs and remains idempotent.
 
 ## Follow-Ups
 

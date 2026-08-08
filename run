@@ -40,7 +40,6 @@ case "${1:-help}" in
     cd "$ROOT_DIR"
     swift build
     swift test
-    "$DOCS_TOOL" update
     "$DOCS_TOOL" check
     "$DOCS_TOOL" check-links
     tests/agent-continuity-docs-smoke.sh
@@ -53,4 +52,3 @@ case "${1:-help}" in
     exit 2
     ;;
 esac
-
