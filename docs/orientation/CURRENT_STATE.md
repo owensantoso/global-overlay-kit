@@ -169,14 +169,18 @@ Mac.
   capture. Shape players and loose shapes use their painted vector paths. The
   pure core policy resolves overlapping draggable roots front-to-back, while a
   valid mouse-down retains capture through mouse-up. Automated shipped-frame,
-  frame-change, mirroring, transparent-gap, and capture-lifecycle checks pass;
-  real overlay click precision remains a human acceptance gate.
+  frame-change, mirroring, transparent-gap, and capture-lifecycle checks pass.
+  The exact signed Release install at commit `cf8153a` also passed Owen's live
+  painted-pixel click-through and drag-capture check across the installed
+  overlay.
 - A fresh Jump while holding toward a contacted visible-window side now starts
   the pure coincident-plane traversal state. Every visible feature on that X
   plane is ignored until previous-frame full player bounds clear it; a
   different X plane still collides, and neutral/away input retains the ordinary
   outward wall jump. Automated toward/away, coincident/distinct-plane, and
-  center-cross-straddle coverage passes; traversal feel remains unverified.
+  center-cross-straddle coverage passes. Owen's installed-app check passed both
+  toward-wall full traversal without snagging and the ordinary outward
+  away-wall jump.
 - Godot reuse now has two separately versioned proposed seams. ADR-0004's
   `desktop-window-feed` supplies local macOS observation to a future Godot
   authority. ADR-0005's `desktop-game-state` supplies privacy-filtered

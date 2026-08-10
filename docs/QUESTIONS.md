@@ -2,7 +2,7 @@
 type: generated-view
 title: Question Registry
 status: generated
-updated_at: "2026-08-11 06:53:26 JST +0900"
+updated_at: "2026-08-11 07:05:16 JST +0900"
 ---
 
 # Question Registry

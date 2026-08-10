@@ -685,3 +685,24 @@ feel remain unverified; no app was installed or launched for this receipt.
 - Verification: targeted stationary-point routing, two-close-plane,
   contact-removal, coincident-replacement, and plane-disappearance regressions
   pass. Re-review reports no remaining P0 or P1 findings.
+
+## Installed Painted-Picking And Wall-Traversal Acceptance
+
+- 2026-08-11 07:03 JST - Built commit `cf8153a` as a universal `arm64` and
+  `x86_64` hardened Release app. Strict signature verification passed with
+  bundle identifier `com.owensantoso.DesktopPhysicsDemo`, Apple Development
+  team `GU93K4U9DN`, and a certificate-and-identifier designated requirement.
+- The installed executable at
+  `~/Applications/Desktop Physics Demo.app/Contents/MacOS/Desktop Physics Demo`
+  matched the candidate executable's SHA-256 exactly and launched from that
+  path. The replaced build is recoverable from
+  `~/.Trash/Desktop Physics Demo.app.pre-painted-picking-20260811-065800`.
+- Owen completed the installed physical protocol and replied **Both pass**.
+  Transparent pixels a few pixels outside the current avatar passed through to
+  the underlying app, while a painted-pixel mouse-down retained drag capture
+  until mouse-up. Toward-wall plus fresh Jump crossed the complete contacted
+  visible-window plane without snagging, and away-wall plus Jump retained the
+  ordinary outward wall jump. The same result also covered the stated
+  permission check: enabling ordinary visible-window platforms did not itself
+  request Accessibility; global keyboard controls retain their separate
+  permission boundary.

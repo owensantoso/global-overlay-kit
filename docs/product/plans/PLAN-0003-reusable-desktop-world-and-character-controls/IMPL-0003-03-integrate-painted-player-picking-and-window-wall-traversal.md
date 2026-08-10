@@ -5,7 +5,7 @@ title: Integrate Painted Player Picking And Window Wall Traversal
 domain: product
 status: completed
 created_at: "2026-08-11 06:28:45 JST +0900"
-updated_at: "2026-08-11 06:51:10 JST +0900"
+updated_at: "2026-08-11 07:03:23 JST +0900"
 parent_plan: PLAN-0003
 task_refs: []
 owner:
@@ -26,7 +26,7 @@ linked_paths:
   - Examples/DesktopPhysicsDemo/Tests/DesktopPhysicsKitTests
 repo_state:
   based_on_commit: 4748418e1b0de40395f39dffc27c6c6ab86a1aa7
-  last_reviewed_commit: 4748418e1b0de40395f39dffc27c6c6ab86a1aa7
+  last_reviewed_commit: cf8153ae2e738effd84d404a381079794e2fe82b
 ---
 
 # IMPL-0003-03 - Integrate Painted Player Picking And Window Wall Traversal
@@ -152,6 +152,15 @@ before full-bounds clearance. Final re-review reported no P0 or P1 findings.
 The final focused adapter suite contains 41 passing XCTest cases. The complete
 nested package additionally contains 44 passing Swift Testing cases. Root docs,
 the full `./run check`, the Apple Development-signed arm64 Debug build, strict
-codesign verification, and diff hygiene pass. No app was installed or launched;
-pixel-level click feel, real overlay routing, and wall-traversal feel remain
-human acceptance work.
+codesign verification, and diff hygiene pass.
+
+After commit `cf8153a`, a fresh universal `arm64`/`x86_64` hardened Release app
+was built, verified with a certificate-and-identifier designated requirement,
+installed at `~/Applications/Desktop Physics Demo.app`, and launched from that
+exact path. Owen reported **Both pass** for the self-contained installed-app
+protocol: transparent pixels immediately around the current avatar passed
+through while painted-pixel drag capture persisted through mouse-up; toward-
+wall Jump crossed the complete visible-window plane without snagging while an
+away-wall Jump remained outward; and enabling ordinary window platforms did
+not introduce an Accessibility prompt. The replaced build remains recoverable
+from `~/.Trash/Desktop Physics Demo.app.pre-painted-picking-20260811-065800`.
