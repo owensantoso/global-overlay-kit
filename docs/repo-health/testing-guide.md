@@ -58,7 +58,7 @@ file existing on disk is not evidence that a remote run has passed.
 |---|---|---|---|
 | Compile | `swift build` | Package source type-checks and links in the local toolchain | Runtime window behavior |
 | Automated contract | `swift test` | Constructed panel properties and in-place setters match focused assertions | Cross-process pointer routing, focus, Spaces, or pixels |
-| Desktop-world tests | `swift test --package-path Examples/DesktopPhysicsDemo` | Size mapping, cursor coordinates/resizing, shape bodies, control-family filtering, run/sit input, character state/render coverage, derived controller values, buffered input, scene-level grounding/jump/wall-slide/wall-jump admission, and drag lifecycle | Real cursor collision, event-tap admission, drag event routing, animation or movement feel, or Command-Tab delivery |
+| Desktop-world tests | `swift test --package-path Examples/DesktopPhysicsDemo` | Size mapping, cursor coordinates/resizing, shape bodies, control-family filtering, run/sit input, character state/render coverage, derived controller values, buffered input, scene-level grounding/jump/wall-slide/wall-jump admission, shipped-frame painted picking, pointer capture, coincident-plane traversal, permission-free geometry, and drag lifecycle | Real cursor collision, event-tap admission, pixel-picking feel, drag event routing, wall-traversal feel, animation or movement feel, or Command-Tab delivery |
 | Signed app | Xcode build plus `codesign --verify --deep --strict` | Exact app bundle builds with the intended stable identity | Accessibility trust or actual protected key suppression |
 | Documentation | `./run docs` | IDs, frontmatter, generated views, local links, and wrapper smoke | Package behavior |
 | Diff hygiene | `git diff --check` | No whitespace errors in the diff | Correctness |
@@ -81,7 +81,8 @@ The focused tests assert:
 - preservation of the configured initial frame after installing an arbitrary
   controller whose root view has its own size
 
-The thirteen nested desktop-world tests additionally assert:
+The nested package's 41 XCTest cases and 44 Swift Testing cases additionally
+assert:
 
 - explicit and random-range object sizes plus circle, square, and triangle
   physics bodies
@@ -94,6 +95,15 @@ The thirteen nested desktop-world tests additionally assert:
 - grounded jump admission in a presented SpriteKit scene
 - object grab/follow/release lifecycle, bounded release velocity, stationary
   drop, and restoration of dynamic physics
+- current shipped-frame alpha picking across animation-frame changes,
+  scale/rotation/mirroring, a near-avatar painted/transparent boundary, and
+  post-mouse-down capture retention
+- routing-state refresh after an animation-frame coverage change
+- nearest deterministic visible-window wall contact, coincident-plane
+  exclusion/replacement, distinct-plane collision, stale-contact removal, and
+  toward-versus-away wall jumps
+- injected permission-free Quartz window observation and selected-display
+  conversion
 - clearing held gameplay state when a modifier becomes active
 
 These are useful mechanism tests. They are not end-to-end proof.
@@ -208,9 +218,29 @@ For direct object manipulation:
 3. Flick-release it and confirm it flies with the gesture, then hold another
    object still before release and confirm it drops instead of using stale
    velocity.
-4. Confirm the player is not draggable.
-5. Use the still-visible control window to turn drag mode off, then click a
+4. With the stick-figure player visible, click just outside its painted pixels
+   but inside the surrounding texture square and confirm the underlying app
+   receives the click. Then click a painted head, body, arm, and leg pixel and
+   confirm each can begin a drag. Repeat while facing both directions and in at
+   least idle, sit, and jump frames.
+5. After a valid player mouse-down, move the pointer into transparent space and
+   confirm the player remains captured until mouse-up. After release, confirm
+   the same transparent point immediately returns to click-through.
+6. Use the still-visible control window to turn drag mode off, then click a
    named control in another app and confirm click-through is restored.
+
+For visible-window wall traversal:
+
+1. Turn window platforms and visible side-wall collision on, then place the
+   player against an original visible left or right window edge.
+2. Hold away from the edge and press Jump. Confirm the existing outward wall
+   jump remains unchanged.
+3. Return to the wall, hold toward it, and press Jump. Confirm the player moves
+   through every line coincident at that X coordinate without snagging after
+   its center crosses.
+4. Confirm a separate visible edge at another X coordinate still stops the
+   player. Repeat from both directions and verify the overlay does not request
+   Accessibility permission merely to enable window geometry.
 
 ## Interpreting Failures
 

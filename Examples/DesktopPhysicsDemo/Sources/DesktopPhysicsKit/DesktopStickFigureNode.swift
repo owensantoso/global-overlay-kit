@@ -1,5 +1,58 @@
 import AppKit
+import ImageIO
 @preconcurrency import SpriteKit
+
+struct DesktopPaintedAlphaMask: Sendable {
+    static let defaultAlphaThreshold: UInt8 = 26
+
+    let width: Int
+    let height: Int
+    private let alpha: [UInt8]
+
+    init(cgImage: CGImage) {
+        width = cgImage.width
+        height = cgImage.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue
+            | CGImageAlphaInfo.premultipliedLast.rawValue
+        guard let context = CGContext(
+            data: &pixels,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width * 4,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else {
+            alpha = []
+            return
+        }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        alpha = stride(from: 3, to: pixels.count, by: 4).map { pixels[$0] }
+    }
+
+    func isPainted(
+        normalizedPoint: CGPoint,
+        alphaThreshold: UInt8 = defaultAlphaThreshold
+    ) -> Bool {
+        guard width > 0,
+              height > 0,
+              alpha.count == width * height,
+              normalizedPoint.x >= 0,
+              normalizedPoint.x <= 1,
+              normalizedPoint.y >= 0,
+              normalizedPoint.y <= 1 else {
+            return false
+        }
+        let x = min(width - 1, Int(normalizedPoint.x * CGFloat(width)))
+        let y = min(
+            height - 1,
+            Int((1 - normalizedPoint.y) * CGFloat(height))
+        )
+        return alpha[y * width + x] >= alphaThreshold
+    }
+}
 
 enum DesktopCharacterMotion: String, CaseIterable, Equatable, Sendable {
     case idle
@@ -49,17 +102,23 @@ struct DesktopCharacterAnimationState: Equatable, Sendable {
 final class DesktopStickFigureNode: SKNode {
     static let collisionSize = CGSize(width: 34, height: 86)
 
+    private struct Frame {
+        let texture: SKTexture
+        let mask: DesktopPaintedAlphaMask
+    }
+
     private static let idleFrames = textures(prefix: "fighter_Idle_", range: 1...8)
     private static let walkFrames = textures(prefix: "fighter_walk_", range: 9...16)
     private static let runFrames = textures(prefix: "fighter_run_", range: 17...24)
     private static let jumpFrames = textures(prefix: "fighter_jump_", range: 43...47)
     private static let wallSlideFrames = [
-        texture(named: "fighter_wallslide0083"),
-        texture(named: "fighter_wallslide0084")
+        frame(named: "fighter_wallslide0083"),
+        frame(named: "fighter_wallslide0084")
     ]
-    private static let sitFrame = texture(named: "fighter_slide_0025")
+    private static let sitFrame = frame(named: "fighter_slide_0025")
 
-    private let sprite = SKSpriteNode(texture: idleFrames[0])
+    private let sprite = SKSpriteNode(texture: idleFrames[0].texture)
+    private var currentFrame = idleFrames[0]
     private var stateStartedAt: TimeInterval = 0
 
     private(set) var animationState = DesktopCharacterAnimationState(
@@ -92,21 +151,37 @@ final class DesktopStickFigureNode: SKNode {
         }
 
         let localTime = max(0, time - stateStartedAt)
-        sprite.texture = texture(
+        currentFrame = frame(
             for: state.motion,
             time: localTime,
             verticalVelocity: verticalVelocity,
             reduceMotion: reduceMotion
         )
+        sprite.texture = currentFrame.texture
         sprite.xScale = state.facing.rawValue
     }
 
-    private func texture(
+    func isPainted(at point: CGPoint, in coordinateNode: SKNode) -> Bool {
+        guard sprite.isHidden == false,
+              sprite.alpha > 0,
+              sprite.size.width > 0,
+              sprite.size.height > 0 else {
+            return false
+        }
+        let local = sprite.convert(point, from: coordinateNode)
+        let normalized = CGPoint(
+            x: local.x / sprite.size.width + sprite.anchorPoint.x,
+            y: local.y / sprite.size.height + sprite.anchorPoint.y
+        )
+        return currentFrame.mask.isPainted(normalizedPoint: normalized)
+    }
+
+    private func frame(
         for motion: DesktopCharacterMotion,
         time: TimeInterval,
         verticalVelocity: CGFloat,
         reduceMotion: Bool
-    ) -> SKTexture {
+    ) -> Frame {
         switch motion {
         case .idle:
             loopFrame(in: Self.idleFrames, time: time, framesPerSecond: 8, reduceMotion: reduceMotion)
@@ -129,17 +204,17 @@ final class DesktopStickFigureNode: SKNode {
     }
 
     private func loopFrame(
-        in textures: [SKTexture],
+        in textures: [Frame],
         time: TimeInterval,
         framesPerSecond: Double,
         reduceMotion: Bool
-    ) -> SKTexture {
+    ) -> Frame {
         guard !reduceMotion else { return textures[0] }
         let index = Int(time * framesPerSecond) % textures.count
         return textures[index]
     }
 
-    private func jumpFrame(time: TimeInterval, verticalVelocity: CGFloat) -> SKTexture {
+    private func jumpFrame(time: TimeInterval, verticalVelocity: CGFloat) -> Frame {
         if time < 0.07 { return Self.jumpFrames[0] }
         if verticalVelocity > 350 { return Self.jumpFrames[1] }
         if verticalVelocity >= 0 { return Self.jumpFrames[2] }
@@ -149,20 +224,24 @@ final class DesktopStickFigureNode: SKNode {
     private static func textures(
         prefix: String,
         range: ClosedRange<Int>
-    ) -> [SKTexture] {
-        range.map { texture(named: prefix + String(format: "%04d", $0)) }
+    ) -> [Frame] {
+        range.map { frame(named: prefix + String(format: "%04d", $0)) }
     }
 
-    private static func texture(named name: String) -> SKTexture {
+    private static func frame(named name: String) -> Frame {
         guard let url = Bundle.module.url(
             forResource: name,
             withExtension: "png",
             subdirectory: "StickFigureCC0"
-        ), let image = NSImage(contentsOf: url) else {
+        ), let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+        let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
             fatalError("Missing bundled stick-figure frame: \(name).png")
         }
-        let texture = SKTexture(image: image)
+        let texture = SKTexture(cgImage: image)
         texture.filteringMode = .linear
-        return texture
+        return Frame(
+            texture: texture,
+            mask: DesktopPaintedAlphaMask(cgImage: image)
+        )
     }
 }

@@ -4,13 +4,10 @@ import MacDesktopWindowGeometry
 import SpriteKit
 
 public enum DesktopWindowPlatformError: LocalizedError {
-    case accessibilityRequired
     case unavailable(String)
 
     public var errorDescription: String? {
         switch self {
-        case .accessibilityRequired:
-            "Grant Accessibility access, return here, then turn window platforms on again."
         case let .unavailable(message):
             message
         }
@@ -120,13 +117,6 @@ public final class DesktopPhysicsWorld {
             disableWindowPlatforms(message: "Window platforms are off.")
             return
         }
-        guard windowGeometryProvider.isAccessibilityTrusted else {
-            disableWindowPlatforms(
-                message: "Accessibility access is required. Window platforms are off."
-            )
-            throw DesktopWindowPlatformError.accessibilityRequired
-        }
-
         windowPlatformsActive = true
         do {
             try refreshWindowPlatforms()
@@ -224,8 +214,6 @@ public final class DesktopPhysicsWorld {
             sceneController.scene.setWindowPlatforms(snapshot.windows)
             windowPlatformStatus = snapshot.message
             publishWindowPlatformState()
-        case .accessibilityRequired:
-            throw DesktopWindowPlatformError.accessibilityRequired
         case .unavailable:
             throw DesktopWindowPlatformError.unavailable(snapshot.message)
         }

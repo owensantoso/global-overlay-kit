@@ -625,3 +625,63 @@ checks, continuity smoke, and diff hygiene.
   core tests pass. `./run docs && ./run check` passes the 33 XCTest tests, 44
   Swift Testing tests, signed Debug app build, generated documentation, link
   checks, continuity smoke, and diff hygiene.
+
+## 2026-08-11 SpriteKit Interaction Adapter
+
+`IMPL-0003-03` connects the first two pure interaction policies to the live
+SpriteKit authority without moving image or engine state into
+`DesktopGameCore`.
+
+The stick-figure loader now builds one immutable 8-bit alpha mask beside every
+shipped 512-by-512 PNG texture. Masks are cached by the static frame table and
+sampled with a 10 percent alpha threshold. Pointer coordinates pass through the
+live SpriteKit node transform into normalized bottom-left visual coordinates,
+then into the image's top-row storage convention. This covers current-frame
+animation, sprite anchor/offset, and directional mirroring. Shape roots use
+their filled/stroked vector paths. Physics bodies never participate in picking.
+The scene feeds caller-reported coverage into the pure deterministic
+front-to-back candidate policy, while the existing mouse-down capture remains
+owned by the scene through release.
+
+Visible window side features now have stable adapter IDs containing the source
+fragment and left/right side. A fresh buffered Jump plus current/recent window
+contact is passed to the pure wall decision. Toward input stores a traversal
+state, gives the player a bounded impulse into that plane, and filters every
+coincident feature until previous-frame full horizontal bounds clear. Away or
+neutral input preserves the prior outward wall jump; distinct X planes remain
+collidable. Screen and loose-object walls do not opt into traversal.
+
+The geometry adapter and world command path no longer call
+`AXIsProcessTrusted`, expose an Accessibility-required geometry state, or link
+ApplicationServices. An injected observation fixture proves an ordinary
+window is converted and returned without a permission branch. The independent
+global-key controller still uses Accessibility exactly as before.
+
+Test-first compilation failed on the missing mask, injected-observation,
+feature-ID, exclusion, and scene-state APIs. The completed nested package then
+passed 41 XCTest tests and 44 Swift Testing tests. New tests use the actual CC0
+idle/sit pixels, prove a point changes coverage with the current frame, prove
+mirroring moves that point, reject transparent texture area, retain capture
+after a painted mouse-down, distinguish coincident and later wall planes, and
+preserve outward away-wall jumping. Human overlay click precision and traversal
+feel remain unverified; no app was installed or launched for this receipt.
+
+### Interaction-adapter review correction
+
+- What happened: the first adapter pass updated overlay capture before the
+  animation selected its rendered frame, selected among nearby wall edges by
+  dictionary order, and retained stale contact/traversal after source-window
+  removal.
+- What led to it: current-frame rendering, panel routing, collision probing,
+  and live observation reconciliation were reviewed as separate mechanics
+  instead of one frame/lifecycle contract.
+- Source: implementation assumptions exposed by independent code/contract
+  review.
+- What changed: capture is refreshed again immediately after animation-frame
+  mutation; candidate wall contacts sort by point-to-plane distance and stable
+  tie-breakers; exact contacts expire when their source feature disappears;
+  active traversal survives source-fragment replacement only while any
+  coincident physical plane remains, then clears when that plane disappears.
+- Verification: targeted stationary-point routing, two-close-plane,
+  contact-removal, coincident-replacement, and plane-disappearance regressions
+  pass. Re-review reports no remaining P0 or P1 findings.

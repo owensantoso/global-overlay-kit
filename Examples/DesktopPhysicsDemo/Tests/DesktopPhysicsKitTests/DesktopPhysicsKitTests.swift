@@ -1,5 +1,6 @@
 import AppKit
 import CoreGraphics
+import DesktopGameCore
 import SpriteKit
 import XCTest
 @testable import DesktopPhysicsKit
@@ -21,6 +22,153 @@ private final class TestMonotonicClock: @unchecked Sendable {
 }
 
 final class DesktopPhysicsKitTests: XCTestCase {
+    @MainActor
+    func testStickFigurePaintedCoverageUsesCurrentShippedFrameAndMirroring() throws {
+        let scene = SKScene(size: CGSize(width: 800, height: 600))
+        let figure = DesktopStickFigureNode()
+        figure.position = CGPoint(x: 300, y: 260)
+        figure.setScale(1.35)
+        figure.zRotation = 0.27
+        scene.addChild(figure)
+        let sprite = try XCTUnwrap(figure.children.first as? SKSpriteNode)
+        let sourcePoint = CGPoint(
+            x: 150.0 / 512.0,
+            y: 1.0 - 300.0 / 512.0
+        )
+        let localPoint = CGPoint(
+            x: (sourcePoint.x - sprite.anchorPoint.x) * sprite.size.width,
+            y: (sourcePoint.y - sprite.anchorPoint.y) * sprite.size.height
+        )
+
+        figure.update(
+            state: .init(motion: .idle, facing: .right),
+            time: 1,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        let idleScenePoint = sprite.convert(localPoint, to: scene)
+        XCTAssertFalse(figure.isPainted(at: idleScenePoint, in: scene))
+
+        figure.update(
+            state: .init(motion: .sit, facing: .right),
+            time: 2,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        XCTAssertTrue(figure.isPainted(at: idleScenePoint, in: scene))
+
+        figure.update(
+            state: .init(motion: .sit, facing: .left),
+            time: 3,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        let mirroredScenePoint = sprite.convert(localPoint, to: scene)
+        XCTAssertTrue(figure.isPainted(at: mirroredScenePoint, in: scene))
+        XCTAssertFalse(figure.isPainted(at: idleScenePoint, in: scene))
+    }
+
+    @MainActor
+    func testStickFigureDragCaptureRejectsTransparentTextureAreaAndPersistsAfterMouseDown() throws {
+        let scene = DesktopPhysicsScene(
+            size: CGSize(width: 800, height: 600),
+            screenFrame: CGRect(x: 0, y: 0, width: 800, height: 600),
+            configuration: .init(),
+            inputState: DesktopGameInputState()
+        )
+        scene.spawnPlayer(appearance: .stickFigure)
+        let player = try XCTUnwrap(
+            scene.children.first { $0.name == "desktop-physics-player" }
+        )
+        player.position = CGPoint(x: 300, y: 260)
+        let figure = try XCTUnwrap(player.children.first as? DesktopStickFigureNode)
+        let sprite = try XCTUnwrap(figure.children.first as? SKSpriteNode)
+        let painted = sprite.convert(.zero, to: scene)
+        func scenePoint(sourceX: CGFloat, sourceY: CGFloat) -> CGPoint {
+            sprite.convert(
+                CGPoint(
+                    x: (sourceX / 512 - sprite.anchorPoint.x) * sprite.size.width,
+                    y: ((1 - sourceY / 512) - sprite.anchorPoint.y) * sprite.size.height
+                ),
+                to: scene
+            )
+        }
+        let nearTransparentEdge = scenePoint(sourceX: 195, sourceY: 270)
+        let nearPaintedEdge = scenePoint(sourceX: 200, sourceY: 270)
+        let transparent = sprite.convert(
+            CGPoint(x: -sprite.size.width * 0.46, y: -sprite.size.height * 0.46),
+            to: scene
+        )
+        scene.setObjectDraggingEnabled(true)
+
+        XCTAssertTrue(scene.shouldCaptureDragInput(at: painted))
+        XCTAssertTrue(scene.shouldCaptureDragInput(at: nearPaintedEdge))
+        XCTAssertFalse(scene.shouldCaptureDragInput(at: nearTransparentEdge))
+        XCTAssertFalse(scene.shouldCaptureDragInput(at: transparent))
+        XCTAssertTrue(scene.beginObjectDrag(at: painted, timestamp: 1))
+        XCTAssertTrue(scene.shouldCaptureDragInput(at: transparent))
+        scene.endObjectDrag(timestamp: 1.1, applyingThrow: false)
+        XCTAssertFalse(scene.shouldCaptureDragInput(at: transparent))
+    }
+
+    @MainActor
+    func testDragRoutingRefreshesWhenTheCurrentAnimationFrameChangesAtAStationaryPoint() throws {
+        let scene = DesktopPhysicsScene(
+            size: CGSize(width: 800, height: 600),
+            screenFrame: CGRect(x: 10_000, y: 10_000, width: 800, height: 600),
+            configuration: .init(),
+            inputState: DesktopGameInputState()
+        )
+        scene.spawnPlayer(appearance: .stickFigure)
+        let player = try XCTUnwrap(
+            scene.children.first { $0.name == "desktop-physics-player" }
+        )
+        player.position = CGPoint(x: 300, y: 260)
+        let figure = try XCTUnwrap(player.children.first as? DesktopStickFigureNode)
+        let sprite = try XCTUnwrap(figure.children.first as? SKSpriteNode)
+        let sourcePoint = CGPoint(x: 150.0 / 512.0, y: 1.0 - 300.0 / 512.0)
+        let stationaryPoint = sprite.convert(
+            CGPoint(
+                x: (sourcePoint.x - sprite.anchorPoint.x) * sprite.size.width,
+                y: (sourcePoint.y - sprite.anchorPoint.y) * sprite.size.height
+            ),
+            to: scene
+        )
+        scene.setObjectDraggingEnabled(true)
+        var routingStates: [Bool] = []
+        scene.onDragInputCaptureChange = { routingStates.append($0) }
+
+        figure.update(
+            state: .init(motion: .idle, facing: .right),
+            time: 1,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        scene.refreshDragInputCapture(at: stationaryPoint)
+        figure.update(
+            state: .init(motion: .sit, facing: .right),
+            time: 2,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        scene.refreshDragInputCapture(at: stationaryPoint)
+        figure.update(
+            state: .init(motion: .idle, facing: .right),
+            time: 3,
+            delta: 0,
+            verticalVelocity: 0,
+            reduceMotion: true
+        )
+        scene.refreshDragInputCapture(at: stationaryPoint)
+
+        XCTAssertEqual(routingStates, [false, true, false])
+    }
+
     @MainActor
     func testTransparentSceneViewLeavesLayerBackingOwnedBySpriteKit() throws {
         let controller = DesktopPhysicsSceneViewController(
@@ -522,6 +670,34 @@ final class DesktopPhysicsKitTests: XCTestCase {
         XCTAssertEqual(mapped, CGRect(x: 0, y: 0, width: 1_200, height: 800))
     }
 
+    @MainActor
+    func testWindowGeometryObservationDoesNotRequireAccessibilityTrust() throws {
+        let provider = MacDesktopWindowGeometryProvider(
+            minimumWindowDimension: 50,
+            observation: { _ in
+                .available([
+                    MacDesktopWindowGeometryObservationEntry(
+                        id: 77,
+                        processID: 42,
+                        applicationName: "Example",
+                        frame: CGRect(x: 100, y: 200, width: 300, height: 250),
+                        zIndex: 0
+                    )
+                ])
+            },
+            mainDisplayHeight: { 1_000 }
+        )
+
+        let snapshot = provider.snapshot(
+            selectedScreenFrame: CGRect(x: 0, y: 0, width: 800, height: 700)
+        )
+
+        XCTAssertEqual(snapshot.availability, .available)
+        let window = try XCTUnwrap(snapshot.windows.first)
+        XCTAssertEqual(window.sourceWindowID, 77)
+        XCTAssertEqual(window.frame, CGRect(x: 100, y: 550, width: 300, height: 150))
+    }
+
     func testOcclusionFragmentsRetainOnlyOriginalWindowSides() {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let top = MacDesktopWindowGeometryProvider.visibleSourceEdges(
@@ -954,7 +1130,11 @@ final class DesktopPhysicsKitTests: XCTestCase {
                 playerVerticalRange: 140...180,
                 surfaces: [surface]
             ),
-            DesktopWindowSideCollision(edgeX: 300, wallSide: 1)
+            DesktopWindowSideCollision(
+                featureID: "window:visible:7:0:right",
+                edgeX: 300,
+                wallSide: 1
+            )
         )
         XCTAssertNil(DesktopWindowPlatformPolicy.sideCollision(
             previousCenterX: 70,
@@ -970,6 +1150,222 @@ final class DesktopPhysicsKitTests: XCTestCase {
             playerVerticalRange: 400...440,
             surfaces: [surface]
         ))
+    }
+
+    func testWindowSideTraversalExcludesEveryCoincidentFeatureButNotNextPlane() throws {
+        let contacted = DesktopWindowPlatformSurface(
+            id: "front",
+            frame: CGRect(x: 100, y: 100, width: 200, height: 200),
+            hasVisibleLeftEdge: false,
+            hasVisibleRightEdge: true
+        )
+        let coincident = DesktopWindowPlatformSurface(
+            id: "rear",
+            frame: CGRect(x: 120, y: 100, width: 180, height: 200),
+            hasVisibleLeftEdge: false,
+            hasVisibleRightEdge: true
+        )
+        let distinct = DesktopWindowPlatformSurface(
+            id: "next",
+            frame: CGRect(x: 140, y: 100, width: 200, height: 200),
+            hasVisibleLeftEdge: false,
+            hasVisibleRightEdge: true
+        )
+        let traversal = try DesktopWallTraversalState(
+            featureID: DesktopSurfaceID(rawValue: "window:front:right")!,
+            direction: .positiveX,
+            planeX: 300
+        )
+
+        XCTAssertNil(DesktopWindowPlatformPolicy.sideCollision(
+            previousCenterX: 250,
+            currentCenterX: 320,
+            playerHalfWidth: 20,
+            playerVerticalRange: 140...180,
+            surfaces: [contacted, coincident],
+            excluding: traversal
+        ))
+        XCTAssertFalse(try traversal.shouldClear(
+            previousBounds: DesktopHorizontalBounds(minX: 290, maxX: 330)
+        ))
+        XCTAssertEqual(
+            DesktopWindowPlatformPolicy.sideCollision(
+                previousCenterX: 250,
+                currentCenterX: 350,
+                playerHalfWidth: 20,
+                playerVerticalRange: 140...180,
+                surfaces: [contacted, coincident, distinct],
+                excluding: traversal
+            ),
+            DesktopWindowSideCollision(
+                featureID: "window:next:right",
+                edgeX: 340,
+                wallSide: 1
+            )
+        )
+    }
+
+    @MainActor
+    func testTowardWindowWallJumpBeginsTraversalWhileAwayJumpRemainsOutward() throws {
+        func makeScene() -> (DesktopPhysicsScene, DesktopGameInputState, TestMonotonicClock) {
+            let clock = TestMonotonicClock()
+            let input = DesktopGameInputState(monotonicTime: clock.now)
+            input.activate()
+            let scene = DesktopPhysicsScene(
+                size: CGSize(width: 800, height: 600),
+                screenFrame: CGRect(x: 0, y: 0, width: 800, height: 600),
+                configuration: .init(),
+                inputState: input
+            )
+            scene.setPlayerWindowSideCollisionEnabled(true)
+            scene.setWindowPlatforms([MacDesktopWindow(
+                id: "visible:7:0",
+                sourceWindowID: 7,
+                fragmentIndex: 0,
+                processID: 42,
+                applicationName: "Example",
+                frame: CGRect(x: 300, y: 100, width: 200, height: 300),
+                zIndex: 0
+            )])
+            scene.spawnPlayer(appearance: .stickFigure)
+            scene.setPlayerPositionForTesting(CGPoint(x: 283, y: 220))
+            return (scene, input, clock)
+        }
+
+        func advance(
+            _ scene: DesktopPhysicsScene,
+            clock: TestMonotonicClock,
+            frameTime: inout TimeInterval
+        ) {
+            clock.advance(by: 1.0 / 60.0)
+            frameTime += 1.0 / 60.0
+            scene.update(frameTime)
+            scene.didSimulatePhysics()
+        }
+
+        let (towardScene, towardInput, towardClock) = makeScene()
+        var towardFrame: TimeInterval = 0
+        advance(towardScene, clock: towardClock, frameTime: &towardFrame)
+        XCTAssertEqual(towardScene.playerWallSideForTesting, 1)
+        XCTAssertTrue(towardInput.shouldDiscard(type: .keyDown, keyCode: 2, flags: []))
+        XCTAssertTrue(towardInput.shouldDiscard(type: .keyDown, keyCode: 49, flags: []))
+        advance(towardScene, clock: towardClock, frameTime: &towardFrame)
+        XCTAssertNotNil(towardScene.wallTraversalStateForTesting)
+        XCTAssertGreaterThan(towardScene.playerVelocityForTesting?.dx ?? 0, 0)
+        XCTAssertGreaterThan(towardScene.playerVelocityForTesting?.dy ?? 0, 0)
+
+        let (awayScene, awayInput, awayClock) = makeScene()
+        var awayFrame: TimeInterval = 0
+        advance(awayScene, clock: awayClock, frameTime: &awayFrame)
+        XCTAssertEqual(awayScene.playerWallSideForTesting, 1)
+        XCTAssertTrue(awayInput.shouldDiscard(type: .keyDown, keyCode: 0, flags: []))
+        XCTAssertTrue(awayInput.shouldDiscard(type: .keyDown, keyCode: 49, flags: []))
+        advance(awayScene, clock: awayClock, frameTime: &awayFrame)
+        XCTAssertNil(awayScene.wallTraversalStateForTesting)
+        XCTAssertLessThan(awayScene.playerVelocityForTesting?.dx ?? 0, 0)
+        XCTAssertGreaterThan(awayScene.playerVelocityForTesting?.dy ?? 0, 0)
+    }
+
+    @MainActor
+    func testNearestVisibleWindowPlaneWinsWhenTwoEdgesShareTheProbe() throws {
+        let scene = DesktopPhysicsScene(
+            size: CGSize(width: 800, height: 600),
+            screenFrame: CGRect(x: 0, y: 0, width: 800, height: 600),
+            configuration: .init(),
+            inputState: DesktopGameInputState()
+        )
+        scene.setPlayerWindowSideCollisionEnabled(true)
+        scene.setWindowPlatforms([
+            MacDesktopWindow(
+                id: "far",
+                sourceWindowID: 8,
+                fragmentIndex: 0,
+                processID: 42,
+                applicationName: "Far",
+                frame: CGRect(x: 306, y: 100, width: 200, height: 300),
+                zIndex: 1,
+                hasVisibleRightEdge: false
+            ),
+            MacDesktopWindow(
+                id: "near",
+                sourceWindowID: 7,
+                fragmentIndex: 0,
+                processID: 42,
+                applicationName: "Near",
+                frame: CGRect(x: 300, y: 100, width: 200, height: 300),
+                zIndex: 0,
+                hasVisibleRightEdge: false
+            )
+        ])
+        scene.spawnPlayer(appearance: .stickFigure)
+        scene.setPlayerPositionForTesting(CGPoint(x: 283, y: 220))
+
+        scene.update(1.0 / 60.0)
+        scene.didSimulatePhysics()
+
+        let contact = try XCTUnwrap(scene.playerWindowWallContactForTesting)
+        XCTAssertEqual(contact.featureID.rawValue, "window:near:left")
+        XCTAssertEqual(contact.planeX, 300)
+    }
+
+    @MainActor
+    func testWindowRemovalClearsStaleContactAndOnlyClearsTraversalWhenItsPlaneDisappears() throws {
+        func makeContactScene() -> (DesktopPhysicsScene, DesktopGameInputState, TestMonotonicClock) {
+            let clock = TestMonotonicClock()
+            let input = DesktopGameInputState(monotonicTime: clock.now)
+            input.activate()
+            let scene = DesktopPhysicsScene(
+                size: CGSize(width: 800, height: 600),
+                screenFrame: CGRect(x: 0, y: 0, width: 800, height: 600),
+                configuration: .init(),
+                inputState: input
+            )
+            scene.setPlayerWindowSideCollisionEnabled(true)
+            scene.setWindowPlatforms([MacDesktopWindow(
+                id: "contacted",
+                sourceWindowID: 7,
+                fragmentIndex: 0,
+                processID: 42,
+                applicationName: "Contacted",
+                frame: CGRect(x: 300, y: 100, width: 200, height: 300),
+                zIndex: 0,
+                hasVisibleRightEdge: false
+            )])
+            scene.spawnPlayer(appearance: .stickFigure)
+            scene.setPlayerPositionForTesting(CGPoint(x: 283, y: 220))
+            scene.update(1.0 / 60.0)
+            scene.didSimulatePhysics()
+            return (scene, input, clock)
+        }
+
+        let (contactScene, _, _) = makeContactScene()
+        XCTAssertNotNil(contactScene.playerWindowWallContactForTesting)
+        contactScene.setWindowPlatforms([])
+        XCTAssertNil(contactScene.playerWindowWallContactForTesting)
+
+        let (traversalScene, input, clock) = makeContactScene()
+        XCTAssertTrue(input.shouldDiscard(type: .keyDown, keyCode: 2, flags: []))
+        XCTAssertTrue(input.shouldDiscard(type: .keyDown, keyCode: 49, flags: []))
+        clock.advance(by: 1.0 / 60.0)
+        traversalScene.update(2.0 / 60.0)
+        traversalScene.didSimulatePhysics()
+        XCTAssertEqual(traversalScene.wallTraversalStateForTesting?.planeX, 300)
+
+        traversalScene.setWindowPlatforms([MacDesktopWindow(
+            id: "coincident-replacement",
+            sourceWindowID: 9,
+            fragmentIndex: 0,
+            processID: 42,
+            applicationName: "Replacement",
+            frame: CGRect(x: 300, y: 100, width: 160, height: 300),
+            zIndex: 0,
+            hasVisibleRightEdge: false
+        )])
+        XCTAssertNil(traversalScene.playerWindowWallContactForTesting)
+        XCTAssertEqual(traversalScene.wallTraversalStateForTesting?.planeX, 300)
+
+        traversalScene.setWindowPlatforms([])
+        XCTAssertNil(traversalScene.wallTraversalStateForTesting)
     }
 
     @MainActor

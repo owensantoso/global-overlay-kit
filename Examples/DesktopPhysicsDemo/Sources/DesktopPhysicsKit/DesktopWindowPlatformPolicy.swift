@@ -1,4 +1,5 @@
 import CoreGraphics
+import DesktopGameCore
 import Foundation
 
 struct DesktopWindowPlatformSurface: Equatable, Sendable {
@@ -45,8 +46,26 @@ enum DesktopWindowPlatformEdge: Equatable, Sendable {
 }
 
 struct DesktopWindowSideCollision: Equatable, Sendable {
+    let featureID: String
     let edgeX: CGFloat
     let wallSide: CGFloat
+
+    var wallContact: DesktopWallContact? {
+        guard let id = DesktopSurfaceID(rawValue: featureID),
+              let direction = DesktopHorizontalDirection(rawValue: Int(wallSide)) else {
+            return nil
+        }
+        return try? DesktopWallContact(
+            featureID: id,
+            directionFromPlayer: direction,
+            planeX: Double(edgeX)
+        )
+    }
+}
+
+private struct DesktopWindowSideFeature {
+    let featureID: String
+    let edgeX: CGFloat
 }
 
 enum DesktopWindowPlatformPolicy {
@@ -134,41 +153,64 @@ enum DesktopWindowPlatformPolicy {
         currentCenterX: CGFloat,
         playerHalfWidth: CGFloat,
         playerVerticalRange: ClosedRange<CGFloat>,
-        surfaces: [DesktopWindowPlatformSurface]
+        surfaces: [DesktopWindowPlatformSurface],
+        excluding traversal: DesktopWallTraversalState? = nil
     ) -> DesktopWindowSideCollision? {
         let horizontalDelta = currentCenterX - previousCenterX
         guard abs(horizontalDelta) > 0.001 else { return nil }
 
-        var crossedEdges: [CGFloat] = []
+        var collisions: [DesktopWindowSideCollision] = []
         for surface in surfaces
         where overlaps(playerVerticalRange, surface.frame.minY...surface.frame.maxY) {
-            var edgeXs: [CGFloat] = []
-            if surface.hasVisibleLeftEdge { edgeXs.append(surface.frame.minX) }
-            if surface.hasVisibleRightEdge { edgeXs.append(surface.frame.maxX) }
-            for edgeX in edgeXs {
+            var features: [DesktopWindowSideFeature] = []
+            if surface.hasVisibleLeftEdge {
+                features.append(DesktopWindowSideFeature(
+                    featureID: "window:\(surface.id):left",
+                    edgeX: surface.frame.minX
+                ))
+            }
+            if surface.hasVisibleRightEdge {
+                features.append(DesktopWindowSideFeature(
+                    featureID: "window:\(surface.id):right",
+                    edgeX: surface.frame.maxX
+                ))
+            }
+            for feature in features {
+                let edgeX = feature.edgeX
+                let collision = DesktopWindowSideCollision(
+                    featureID: feature.featureID,
+                    edgeX: edgeX,
+                    wallSide: horizontalDelta > 0 ? 1 : -1
+                )
+                if let traversal,
+                   let contact = collision.wallContact,
+                   traversal.excludes(contact) {
+                    continue
+                }
                 if horizontalDelta > 0 {
                     let previousSide = previousCenterX + playerHalfWidth
                     let currentSide = currentCenterX + playerHalfWidth
                     if previousSide <= edgeX + 0.5, currentSide >= edgeX - 0.5 {
-                        crossedEdges.append(edgeX)
+                        collisions.append(collision)
                     }
                 } else {
                     let previousSide = previousCenterX - playerHalfWidth
                     let currentSide = currentCenterX - playerHalfWidth
                     if previousSide >= edgeX - 0.5, currentSide <= edgeX + 0.5 {
-                        crossedEdges.append(edgeX)
+                        collisions.append(collision)
                     }
                 }
             }
         }
 
-        guard let edgeX = horizontalDelta > 0
-            ? crossedEdges.min()
-            : crossedEdges.max() else { return nil }
-        return DesktopWindowSideCollision(
-            edgeX: edgeX,
-            wallSide: horizontalDelta > 0 ? 1 : -1
-        )
+        return collisions.sorted { lhs, rhs in
+            if lhs.edgeX != rhs.edgeX {
+                return horizontalDelta > 0
+                    ? lhs.edgeX < rhs.edgeX
+                    : lhs.edgeX > rhs.edgeX
+            }
+            return lhs.featureID < rhs.featureID
+        }.first
     }
 
     private static func overlaps(

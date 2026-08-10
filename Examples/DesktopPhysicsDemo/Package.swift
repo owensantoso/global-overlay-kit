@@ -43,13 +43,13 @@ let package = Package(
                 )
             ],
             linkerSettings: [
-                .linkedFramework("AppKit"),
-                .linkedFramework("ApplicationServices")
+                .linkedFramework("AppKit")
             ]
         ),
         .target(
             name: "DesktopPhysicsKit",
             dependencies: [
+                "DesktopGameCore",
                 .product(
                     name: "GlobalOverlayKit",
                     package: "GlobalOverlayKit"
@@ -63,6 +63,7 @@ let package = Package(
         .testTarget(
             name: "DesktopPhysicsKitTests",
             dependencies: [
+                "DesktopGameCore",
                 "DesktopPhysicsKit",
                 "MacDesktopWindowGeometry"
             ]

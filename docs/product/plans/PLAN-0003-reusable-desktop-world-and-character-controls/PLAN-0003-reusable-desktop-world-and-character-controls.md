@@ -182,6 +182,9 @@ product boundary.
 Execution brief:
 [IMPL-0003-02](IMPL-0003-02-add-portable-3d-game-core.md).
 
+SpriteKit interaction adapter brief:
+[IMPL-0003-03](IMPL-0003-03-integrate-painted-player-picking-and-window-wall-traversal.md).
+
 - Add a nested pure `DesktopGameCore` target before implementing further
   SpriteKit-only mechanics.
 - Move portable identities, coordinates, game-state values, semantic inputs,

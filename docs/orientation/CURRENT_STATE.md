@@ -92,8 +92,8 @@ Mac.
 - An experimental `MacDesktopWindowGeometry` product observes qualifying
   on-screen application-window IDs and frames through canonical
   `DesktopSurfaceKit`, converts and clips them into the selected display, and
-  fails off behind the app's explicit Accessibility permission contract. The
-  normal control window exposes live enable/count/error state.
+  remains available without Accessibility permission. The normal control
+  window exposes live enable/count/error state.
 - Loose objects collide with complete window rectangles. The player instead
   uses descending-from-above one-way top surfaces; only an already supported
   player follows a small move/resize, preventing new window intrusions from
@@ -102,7 +102,8 @@ Mac.
   cyan and its one-way player top edge with a thicker capped yellow line. The
   normal control window can hide the outlines independently; they carry no
   physics bodies and track the same stable IDs and 500 ms refresh.
-- Twenty-four nested-library tests cover continuous and random-range sizes,
+- Forty-one nested-library XCTest cases plus forty-four Swift Testing cases
+  cover continuous and random-range sizes,
   cursor coordinate mapping and resizing, object/player shape construction, selective
   key-family capture, modifier clearing, derived controller parameters,
   buffered jump input, every character animation state and facing, and
@@ -161,6 +162,21 @@ Mac.
   fades an opaque white SpriteKit backdrop together with black enabled-edge
   presentation; Reduce Motion applies the same end state atomically. These
   mechanics and transition feel still require installed physical acceptance.
+- Player direct manipulation now treats the animated stick figure's current
+  immutable PNG alpha mask as its draggable region. Scene-to-sprite conversion
+  follows the live anchor, position, scale, and left/right mirroring; the large
+  transparent texture square and the smaller physics collider do not decide
+  capture. Shape players and loose shapes use their painted vector paths. The
+  pure core policy resolves overlapping draggable roots front-to-back, while a
+  valid mouse-down retains capture through mouse-up. Automated shipped-frame,
+  frame-change, mirroring, transparent-gap, and capture-lifecycle checks pass;
+  real overlay click precision remains a human acceptance gate.
+- A fresh Jump while holding toward a contacted visible-window side now starts
+  the pure coincident-plane traversal state. Every visible feature on that X
+  plane is ignored until previous-frame full player bounds clear it; a
+  different X plane still collides, and neutral/away input retains the ordinary
+  outward wall jump. Automated toward/away, coincident/distinct-plane, and
+  center-cross-straddle coverage passes; traversal feel remains unverified.
 - Godot reuse now has two separately versioned proposed seams. ADR-0004's
   `desktop-window-feed` supplies local macOS observation to a future Godot
   authority. ADR-0005's `desktop-game-state` supplies privacy-filtered
@@ -180,10 +196,11 @@ Mac.
   implemented yet. Version-1 state is right-handed X/Y/Z with the collapsed desktop
   on `Z = 0`; SpriteKit remains the first planar authority. A local Godot pipe probe passed, but
   the current 2x Retina mismatch still blocks collider-ready window-feed work.
-- DesktopSurfaceKit geometry itself is permission-free. The current consumer's
-  Accessibility trust guard around geometry is an ownership bug to remove;
-  global keyboard capture and the proposed optional focus observer retain
-  their separate Accessibility behavior.
+- DesktopSurfaceKit geometry and the nested selected-display adapter are now
+  permission-free. The obsolete Accessibility checks and ApplicationServices
+  link were removed from the geometry/world path, with injected observation
+  coverage. Global keyboard capture and optional focus observation retain their
+  separate Accessibility behavior.
 - Screen-filling configuration is a frame snapshot. The caller still owns
   reacting to display attachment, removal, rotation, or resolution changes.
 - There is no multi-overlay coordinator, general keyboard remapper, custom
@@ -236,8 +253,8 @@ The active work is [PLAN-0003](../product/plans/PLAN-0003-reusable-desktop-world
 - `fill(_:)` uses the supplied screen's frame once; it does not monitor display
   topology.
 - Core Graphics, not Accessibility, supplies window IDs and rectangles for the
-  experimental platform provider. Accessibility is the explicit fail-off gate
-  shared with global player controls.
+  experimental platform provider. Accessibility remains a separate explicit
+  fail-off gate for global player controls and optional focus observation.
 - Installing an `NSViewController` can cause AppKit to adopt the controller
   view's existing size. The host must reassert its configured frame after
   installation; the construction test protects this invariant.

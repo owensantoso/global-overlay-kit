@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-08-11 06:23:34 JST +0900"
+updated_at: "2026-08-11 06:53:26 JST +0900"
 ---
 
 # Docs Registry
@@ -35,6 +35,7 @@ updated_at: "2026-08-11 06:23:34 JST +0900"
 | IMPL-0002-01 | implementation-brief | Build And Physically Verify The Desktop Physics Demo | completed | `product/plans/PLAN-0002-desktop-physics-falsification-demo/IMPL-0002-01-build-and-physically-verify-the-desktop-physics-demo.md` |
 | IMPL-0003-01 | implementation-brief | Extract DesktopPhysicsKit And Add Character Controls | in_progress | `product/plans/PLAN-0003-reusable-desktop-world-and-character-controls/IMPL-0003-01-extract-desktopphysicskit-and-add-character-controls.md` |
 | IMPL-0003-02 | implementation-brief | Add Portable 3D Game Core | completed | `product/plans/PLAN-0003-reusable-desktop-world-and-character-controls/IMPL-0003-02-add-portable-3d-game-core.md` |
+| IMPL-0003-03 | implementation-brief | Integrate Painted Player Picking And Window Wall Traversal | completed | `product/plans/PLAN-0003-reusable-desktop-world-and-character-controls/IMPL-0003-03-integrate-painted-player-picking-and-window-wall-traversal.md` |
 | LRN-0000 | learning | Learning Title | active | `decisions/learnings/LRN-0000-learning-title.md` |
 | PLAN-0000 | plan | <Plan title> | draft | `product/plans/PLAN-0000-plan-title/PLAN-0000-plan-title.md` |
 | PLAN-0001 | plan | Clean-Room Overlay Host MVP | completed | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |

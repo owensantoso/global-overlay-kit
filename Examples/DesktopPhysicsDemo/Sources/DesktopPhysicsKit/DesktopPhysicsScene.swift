@@ -1,4 +1,5 @@
 import AppKit
+import DesktopGameCore
 import MacDesktopWindowGeometry
 @preconcurrency import SpriteKit
 
@@ -62,6 +63,9 @@ final class DesktopPhysicsScene: SKScene {
     private var playerWallSide: CGFloat = 0
     private var lastWallSide: CGFloat = 0
     private var lastWallContactAt: TimeInterval?
+    private var playerWindowWallContact: DesktopWallContact?
+    private var lastWindowWallContact: DesktopWallContact?
+    private var wallTraversalState: DesktopWallTraversalState?
     private var wallJumpControlLockedUntil: TimeInterval?
     private var wallRunStartedAt: TimeInterval?
     private var jumpState = DesktopPlatformerJumpState()
@@ -127,6 +131,14 @@ final class DesktopPhysicsScene: SKScene {
 
     var playerWallSideForTesting: CGFloat {
         playerWallSide
+    }
+
+    var wallTraversalStateForTesting: DesktopWallTraversalState? {
+        wallTraversalState
+    }
+
+    var playerWindowWallContactForTesting: DesktopWallContact? {
+        playerWindowWallContact
     }
 
     var playerAnimationStateForTesting: DesktopCharacterAnimationState? {
@@ -322,17 +334,62 @@ final class DesktopPhysicsScene: SKScene {
     }
 
     private func draggableRoot(at point: CGPoint) -> SKNode? {
-        for hit in nodes(at: point) {
-            var candidate: SKNode? = hit
-            while let node = candidate, node !== self {
-                if node.parent === self,
-                   node.userData?[Self.draggableUserDataKey] as? Bool == true {
-                    return node
-                }
-                candidate = node.parent
+        let orderedRoots = children.enumerated()
+            .filter { _, node in
+                node.userData?[Self.draggableUserDataKey] as? Bool == true
             }
+            .sorted { lhs, rhs in
+                if lhs.element.zPosition != rhs.element.zPosition {
+                    return lhs.element.zPosition > rhs.element.zPosition
+                }
+                return lhs.offset > rhs.offset
+            }
+        var rootsByID: [DesktopEntityID: SKNode] = [:]
+        let candidates = orderedRoots.enumerated().compactMap { rank, entry
+            -> DesktopPaintedCandidate? in
+            guard let entityID = draggableEntityID(for: entry.element) else { return nil }
+            rootsByID[entityID] = entry.element
+            return DesktopPaintedCandidate(
+                entityID: entityID,
+                frontToBackRank: rank,
+                isDraggable: true,
+                isPaintedAtPoint: isPainted(entry.element, at: point)
+            )
         }
-        return nil
+        guard let selected = DesktopPaintedCandidateSelection.frontmost(in: candidates) else {
+            return nil
+        }
+        return rootsByID[selected]
+    }
+
+    private func draggableEntityID(for node: SKNode) -> DesktopEntityID? {
+        if node === playerNode {
+            return DesktopEntityID(rawValue: "desktop-player")
+        }
+        guard let id = node.userData?["id"] as? Int else { return nil }
+        return DesktopEntityID(rawValue: "desktop-object-\(id)")
+    }
+
+    private func isPainted(_ node: SKNode, at point: CGPoint) -> Bool {
+        guard node.calculateAccumulatedFrame().contains(point) else { return false }
+        if node === playerNode, let stickFigureNode {
+            return stickFigureNode.isPainted(at: point, in: self)
+        }
+        guard let shape = node as? SKShapeNode,
+              let path = shape.path else {
+            return false
+        }
+        let local = shape.convert(point, from: self)
+        if path.contains(local) {
+            return true
+        }
+        guard shape.lineWidth > 0 else { return false }
+        return path.copy(
+            strokingWithWidth: shape.lineWidth,
+            lineCap: .round,
+            lineJoin: .round,
+            miterLimit: 0
+        ).contains(local)
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -453,6 +510,7 @@ final class DesktopPhysicsScene: SKScene {
         }
 
         windowPlatformSurfaces = newSurfaces
+        reconcileWindowWallInteraction(with: newSurfaces)
         if let supportedWindowID, newSurfaces[supportedWindowID] == nil {
             self.supportedWindowID = nil
             supportedWindowEdge = nil
@@ -485,6 +543,11 @@ final class DesktopPhysicsScene: SKScene {
     func setPlayerWindowSideCollisionEnabled(_ enabled: Bool) {
         guard enabled != playerWindowSideCollisionEnabled else { return }
         playerWindowSideCollisionEnabled = enabled
+        if !enabled {
+            playerWindowWallContact = nil
+            lastWindowWallContact = nil
+            wallTraversalState = nil
+        }
         rebuildWindowPlatformOutlines()
     }
 
@@ -729,6 +792,9 @@ final class DesktopPhysicsScene: SKScene {
         playerWallSide = 0
         lastWallSide = 0
         lastWallContactAt = nil
+        playerWindowWallContact = nil
+        lastWindowWallContact = nil
+        wallTraversalState = nil
         wallJumpControlLockedUntil = nil
         wallRunStartedAt = nil
         jumpState = DesktopPlatformerJumpState()
@@ -812,6 +878,7 @@ final class DesktopPhysicsScene: SKScene {
         resolveWindowSideContact()
         clampPlayerFallSpeedAfterPhysics()
         updatePlayerAnimation()
+        refreshDragInputCapture()
     }
 
     static func localCursorPosition(global: CGPoint, screenFrame: CGRect) -> CGPoint? {
@@ -824,6 +891,10 @@ final class DesktopPhysicsScene: SKScene {
             global: NSEvent.mouseLocation,
             screenFrame: screenFrame
         )
+        refreshDragInputCapture(at: local)
+    }
+
+    func refreshDragInputCapture(at local: CGPoint?) {
         let next = shouldCaptureDragInput(at: local)
         guard next != dragInputCaptureActive else { return }
         dragInputCaptureActive = next
@@ -1026,13 +1097,48 @@ final class DesktopPhysicsScene: SKScene {
             }
             inputState.consumeDropThroughRequest()
         } else if bufferedJump, recentWallSide != 0 {
-            body.velocity.dx = -recentWallSide * profile.wallJumpHorizontalSpeed
-            body.velocity.dy = profile.wallJumpVerticalSpeed
-            playerFacing = recentWallSide < 0 ? .right : .left
+            let horizontalIntent = DesktopHorizontalDirection(
+                rawValue: Int(snapshot.horizontalDirection)
+            ) ?? .neutral
+            let decision: DesktopWallJumpDecision
+            if let lastWindowWallContact {
+                decision = (try? DesktopWallTraversalPolicy.jumpDecision(
+                    contact: lastWindowWallContact,
+                    horizontalIntent: horizontalIntent,
+                    jumpPressed: true
+                )) ?? DesktopWallJumpDecision(
+                    kind: .outwardWallJump,
+                    traversalState: nil
+                )
+            } else {
+                decision = DesktopWallJumpDecision(
+                    kind: .outwardWallJump,
+                    traversalState: nil
+                )
+            }
+
+            switch decision.kind {
+            case .traverse:
+                wallTraversalState = decision.traversalState
+                body.velocity.dx = recentWallSide * max(
+                    abs(body.velocity.dx),
+                    profile.wallJumpHorizontalSpeed
+                )
+                body.velocity.dy = profile.wallJumpVerticalSpeed
+                playerFacing = recentWallSide < 0 ? .left : .right
+                wallJumpControlLockedUntil = nil
+            case .outwardWallJump, .none:
+                wallTraversalState = nil
+                body.velocity.dx = -recentWallSide * profile.wallJumpHorizontalSpeed
+                body.velocity.dy = profile.wallJumpVerticalSpeed
+                playerFacing = recentWallSide < 0 ? .right : .left
+                wallJumpControlLockedUntil = now + profile.wallJumpSteeringLockTime
+            }
             playerWallSide = 0
+            playerWindowWallContact = nil
+            lastWindowWallContact = nil
             lastWallContactAt = nil
             wallRunStartedAt = nil
-            wallJumpControlLockedUntil = now + profile.wallJumpSteeringLockTime
             inputState.consumeJumpRequest()
         } else {
             let jumpAction = jumpState.decide(
@@ -1089,6 +1195,7 @@ final class DesktopPhysicsScene: SKScene {
         guard let playerNode else {
             playerIsGrounded = false
             playerWallSide = 0
+            playerWindowWallContact = nil
             return
         }
         let profile = playerControllerProfile
@@ -1130,6 +1237,7 @@ final class DesktopPhysicsScene: SKScene {
         }
         let minimumWallNormalX = cos(profile.maximumFloorAngleDegrees * .pi / 180)
         var foundWallSide: CGFloat = 0
+        var foundWindowContact: DesktopWallContact?
         for side: CGFloat in [-1, 1] where foundWallSide == 0 {
             let sideX = playerNode.position.x + side * playerHalfWidth
             let yOffsets = [
@@ -1161,36 +1269,58 @@ final class DesktopPhysicsScene: SKScene {
 
         if foundWallSide == 0,
            playerWindowSideCollisionEnabled,
-           let visibleSide = visibleWindowWallSide(
+           let visibleContact = visibleWindowWallContact(
             for: playerNode.position,
             probeDistance: profile.wallProbeDistance
            ) {
-            foundWallSide = visibleSide
+            foundWallSide = CGFloat(visibleContact.directionFromPlayer.rawValue)
+            foundWindowContact = visibleContact
         }
 
         playerWallSide = foundWallSide
+        playerWindowWallContact = foundWindowContact
         if foundWallSide != 0 {
             lastWallSide = foundWallSide
             lastWallContactAt = inputState.currentMonotonicTime()
+            lastWindowWallContact = foundWindowContact
         }
     }
 
-    private func visibleWindowWallSide(
+    private func visibleWindowWallContact(
         for playerPosition: CGPoint,
         probeDistance: CGFloat
-    ) -> CGFloat? {
+    ) -> DesktopWallContact? {
         let playerVerticalRange = (playerPosition.y - playerHalfHeight)...(playerPosition.y + playerHalfHeight)
+        var candidates: [(distance: CGFloat, contact: DesktopWallContact)] = []
         for side: CGFloat in [-1, 1] {
             let playerSideX = playerPosition.x + side * playerHalfWidth
             for surface in windowPlatformSurfaces.values
             where playerVerticalRange.overlaps(surface.frame.minY...surface.frame.maxY) {
-                let edgeXs = visibleSideEdgeXs(for: surface)
-                if edgeXs.contains(where: { abs($0 - playerSideX) <= probeDistance + 2 }) {
-                    return side
+                for feature in visibleSideFeatures(for: surface)
+                where abs(feature.edgeX - playerSideX) <= probeDistance + 2 {
+                    let collision = DesktopWindowSideCollision(
+                        featureID: feature.featureID,
+                        edgeX: feature.edgeX,
+                        wallSide: side
+                    )
+                    guard let contact = collision.wallContact else { continue }
+                    if wallTraversalState?.excludes(contact) == true { continue }
+                    candidates.append((
+                        distance: abs(feature.edgeX - playerSideX),
+                        contact: contact
+                    ))
                 }
             }
         }
-        return nil
+        return candidates.sorted { lhs, rhs in
+            if lhs.distance != rhs.distance {
+                return lhs.distance < rhs.distance
+            }
+            if lhs.contact.planeX != rhs.contact.planeX {
+                return lhs.contact.planeX < rhs.contact.planeX
+            }
+            return lhs.contact.featureID.rawValue < rhs.contact.featureID.rawValue
+        }.first?.contact
     }
 
     private func resolveWindowSideContact() {
@@ -1199,13 +1329,21 @@ final class DesktopPhysicsScene: SKScene {
               let body = playerNode.physicsBody,
               let previousPosition = playerPositionBeforePhysics,
               objectDrag?.node !== playerNode else { return }
+        if let traversal = wallTraversalState,
+           let previousBounds = try? DesktopHorizontalBounds(
+            minX: Double(previousPosition.x - playerHalfWidth),
+            maxX: Double(previousPosition.x + playerHalfWidth)
+           ), traversal.shouldClear(previousBounds: previousBounds, tolerance: 0.5) {
+            wallTraversalState = nil
+        }
         let verticalRange = (playerNode.position.y - playerHalfHeight)...(playerNode.position.y + playerHalfHeight)
         guard let collision = DesktopWindowPlatformPolicy.sideCollision(
             previousCenterX: previousPosition.x,
             currentCenterX: playerNode.position.x,
             playerHalfWidth: playerHalfWidth,
             playerVerticalRange: verticalRange,
-            surfaces: Array(windowPlatformSurfaces.values)
+            surfaces: Array(windowPlatformSurfaces.values),
+            excluding: wallTraversalState
         ) else { return }
 
         playerNode.position.x = collision.edgeX - collision.wallSide * playerHalfWidth
@@ -1213,15 +1351,50 @@ final class DesktopPhysicsScene: SKScene {
         playerWallSide = collision.wallSide
         lastWallSide = collision.wallSide
         lastWallContactAt = inputState.currentMonotonicTime()
+        playerWindowWallContact = collision.wallContact
+        lastWindowWallContact = collision.wallContact
     }
 
-    private func visibleSideEdgeXs(
+    private func visibleSideFeatures(
         for surface: DesktopWindowPlatformSurface
-    ) -> [CGFloat] {
-        var result: [CGFloat] = []
-        if surface.hasVisibleLeftEdge { result.append(surface.frame.minX) }
-        if surface.hasVisibleRightEdge { result.append(surface.frame.maxX) }
+    ) -> [(featureID: String, edgeX: CGFloat)] {
+        var result: [(featureID: String, edgeX: CGFloat)] = []
+        if surface.hasVisibleLeftEdge {
+            result.append(("window:\(surface.id):left", surface.frame.minX))
+        }
+        if surface.hasVisibleRightEdge {
+            result.append(("window:\(surface.id):right", surface.frame.maxX))
+        }
         return result
+    }
+
+    private func reconcileWindowWallInteraction(
+        with surfaces: [String: DesktopWindowPlatformSurface]
+    ) {
+        let features = surfaces.values.flatMap(visibleSideFeatures)
+        func contains(featureID: DesktopSurfaceID, planeX: Double) -> Bool {
+            features.contains { feature in
+                feature.featureID == featureID.rawValue
+                    && abs(Double(feature.edgeX) - planeX) <= 0.5
+            }
+        }
+
+        if let contact = playerWindowWallContact,
+           !contains(featureID: contact.featureID, planeX: contact.planeX) {
+            playerWindowWallContact = nil
+        }
+        if let contact = lastWindowWallContact,
+           !contains(featureID: contact.featureID, planeX: contact.planeX) {
+            lastWindowWallContact = nil
+            lastWallContactAt = nil
+        }
+        if let traversal = wallTraversalState,
+           !features.contains(where: { feature in
+               abs(Double(feature.edgeX) - traversal.planeX)
+                   <= traversal.coincidentTolerance
+           }) {
+            wallTraversalState = nil
+        }
     }
 
     private func resolveWindowPlatformContact() {

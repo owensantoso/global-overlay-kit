@@ -1,5 +1,3 @@
-import AppKit
-import ApplicationServices
 import CoreGraphics
 import DesktopGeometry
 import Foundation
@@ -13,7 +11,19 @@ import MacDesktopWindowObservation
 
 public enum MacDesktopWindowGeometryAvailability: Equatable, Sendable {
     case available
-    case accessibilityRequired
+    case unavailable
+}
+
+struct MacDesktopWindowGeometryObservationEntry: Equatable, Sendable {
+    let id: UInt32
+    let processID: Int32
+    let applicationName: String?
+    let frame: CGRect
+    let zIndex: Int
+}
+
+enum MacDesktopWindowGeometryObservationResult: Equatable, Sendable {
+    case available([MacDesktopWindowGeometryObservationEntry])
     case unavailable
 }
 
@@ -77,35 +87,53 @@ public struct MacDesktopWindowGeometrySnapshot: Equatable, Sendable {
 /// stable-enough rectangles in one selected SpriteKit scene.
 ///
 /// Core Graphics owns window enumeration and IDs. Accessibility remains an
-/// explicit feature gate so geometry fails off with the app's other global
-/// desktop controls instead of silently changing its permission contract.
+/// independent permission boundary used by global keyboard input and optional
+/// focus observation; ordinary window rectangles do not consult it.
 @MainActor
 public final class MacDesktopWindowGeometryProvider {
     public let minimumWindowDimension: CGFloat
-    private let snapshotter: MacDesktopWindowSnapshotter
+    private let observation: (Set<Int32>) -> MacDesktopWindowGeometryObservationResult
+    private let mainDisplayHeight: () -> CGFloat
 
     public init(minimumWindowDimension: CGFloat = 50) {
-        snapshotter = MacDesktopWindowSnapshotter(
+        let snapshotter = MacDesktopWindowSnapshotter(
             minimumWindowDimension: minimumWindowDimension
         )
         self.minimumWindowDimension = snapshotter.minimumWindowDimension
+        observation = { excludingProcessIDs in
+            let snapshot = snapshotter.snapshot(
+                excludingProcessIDs: excludingProcessIDs
+            )
+            guard snapshot.status == .available else { return .unavailable }
+            return .available(snapshot.windows.map { window in
+                MacDesktopWindowGeometryObservationEntry(
+                    id: window.id.rawValue,
+                    processID: window.processID,
+                    applicationName: window.applicationName,
+                    frame: window.frame,
+                    zIndex: window.zIndex
+                )
+            })
+        }
+        mainDisplayHeight = { CGDisplayBounds(CGMainDisplayID()).height }
     }
 
-    public var isAccessibilityTrusted: Bool {
-        AXIsProcessTrusted()
+    init(
+        minimumWindowDimension: CGFloat,
+        observation: @escaping (Set<Int32>) -> MacDesktopWindowGeometryObservationResult,
+        mainDisplayHeight: @escaping () -> CGFloat
+    ) {
+        self.minimumWindowDimension = minimumWindowDimension.isFinite
+            ? max(1, minimumWindowDimension)
+            : 50
+        self.observation = observation
+        self.mainDisplayHeight = mainDisplayHeight
     }
 
     public func snapshot(
         selectedScreenFrame: CGRect,
         excludingProcessIDs: Set<Int32> = []
     ) -> MacDesktopWindowGeometrySnapshot {
-        guard isAccessibilityTrusted else {
-            return MacDesktopWindowGeometrySnapshot(
-                availability: .accessibilityRequired,
-                windows: [],
-                message: "Accessibility access is required. Window platforms are off."
-            )
-        }
         guard selectedScreenFrame.isFiniteAndNonEmpty else {
             return MacDesktopWindowGeometrySnapshot(
                 availability: .unavailable,
@@ -114,10 +142,7 @@ public final class MacDesktopWindowGeometryProvider {
             )
         }
 
-        let observed = snapshotter.snapshot(
-            excludingProcessIDs: excludingProcessIDs
-        )
-        guard observed.status == .available else {
+        guard case let .available(observed) = observation(excludingProcessIDs) else {
             return MacDesktopWindowGeometrySnapshot(
                 availability: .unavailable,
                 windows: [],
@@ -126,11 +151,11 @@ public final class MacDesktopWindowGeometryProvider {
         }
 
         let observedByID = Dictionary(
-            uniqueKeysWithValues: observed.windows.map { (String($0.id.rawValue), $0) }
+            uniqueKeysWithValues: observed.map { (String($0.id), $0) }
         )
-        let rectangles = observed.windows.map { window in
+        let rectangles = observed.map { window in
             SurfaceRectangle(
-                id: String(window.id.rawValue),
+                id: String(window.id),
                 frame: ScreenFrame(
                     x: window.frame.minX,
                     y: window.frame.minY,
@@ -140,7 +165,7 @@ public final class MacDesktopWindowGeometryProvider {
             )
         }
         let visibleFragments = VisibleRegionExtractor().extract(from: rectangles)
-        let mainDisplayHeight = CGDisplayBounds(CGMainDisplayID()).height
+        let mainDisplayHeight = mainDisplayHeight()
         let windows = visibleFragments.compactMap { fragment -> MacDesktopWindow? in
             guard let observedWindow = observedByID[fragment.sourceRectangleID],
                   let sceneFrame = Self.sceneFrame(
@@ -157,7 +182,7 @@ public final class MacDesktopWindowGeometryProvider {
             }
             return MacDesktopWindow(
                 id: fragment.id,
-                sourceWindowID: observedWindow.id.rawValue,
+                sourceWindowID: observedWindow.id,
                 fragmentIndex: fragment.fragmentIndex,
                 processID: observedWindow.processID,
                 applicationName: observedWindow.applicationName,

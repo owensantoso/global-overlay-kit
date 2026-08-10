@@ -167,11 +167,18 @@ repository and is consumed through the narrow compatibility adapter. The
 provenance and readiness transition are recorded in
 [RSCH-0008](../../research/RSCH-0008-macos-window-geometry-reuse-readiness.md).
 
-The portable state/rules boundary is proposed in
+The portable state/rules boundary is defined in
 [ADR-0005](../../decisions/adr/ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md).
-It is not implemented yet. The current SpriteKit scene remains authoritative
-and still owns several values that must move behind `DesktopGameCore` before
-the next engine-specific feature wave.
+The Foundation-only `DesktopGameCore` target now implements its version-1
+values and pure interaction policies. The SpriteKit authority consumes the
+painted-candidate and coincident-plane wall-traversal policies while retaining
+alpha-mask decoding/cache, node transforms, pointer capture, contacts, and
+physics mutation. It does not yet emit portable snapshots/events or consume a
+replica state stream.
+
+The selected-display geometry adapter no longer checks Accessibility trust.
+Ordinary Quartz rectangles remain available independently of the separate
+Accessibility-backed global-key controller and optional focus observer.
 
 The normal Release app is installed at
 `~/Applications/Desktop Physics Demo.app`. Its standard Dock reopen recreates
