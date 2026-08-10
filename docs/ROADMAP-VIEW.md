@@ -2,7 +2,7 @@
 type: generated-view
 title: Roadmap View
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Roadmap View
@@ -15,3 +15,5 @@ Generated plan-order view. `PLAN-*` numbering and `sequence` frontmatter should 
 |---|---|---|---|---|---|---|---|---|---|
 | 0.0 | PLAN-0000 | PLAN-0000-plan-title | <Plan title> | draft | product | product |  |  | `product/plans/PLAN-0000-plan-title/PLAN-0000-plan-title.md` |
 | 1.0 | PLAN-0001 | PLAN-0001-clean-room-overlay-host-mvp | Clean-Room Overlay Host MVP | completed | product | product |  |  | `product/plans/PLAN-0001-clean-room-overlay-host-mvp/PLAN-0001-clean-room-overlay-host-mvp.md` |
+| 2.0 | PLAN-0002 | PLAN-0002-desktop-physics-falsification-demo | Desktop Physics Falsification Demo | completed | product | product |  |  | `product/plans/PLAN-0002-desktop-physics-falsification-demo/PLAN-0002-desktop-physics-falsification-demo.md` |
+| 3.0 | PLAN-0003 | PLAN-0003-reusable-desktop-world-and-character-controls | Reusable Desktop World And Character Controls | in_progress | product | product | PLAN-0002 |  | `product/plans/PLAN-0003-reusable-desktop-world-and-character-controls/PLAN-0003-reusable-desktop-world-and-character-controls.md` |

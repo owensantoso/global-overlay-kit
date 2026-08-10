@@ -2,7 +2,7 @@
 type: generated-view
 title: Explainer Registry
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Explainer Registry
@@ -15,3 +15,4 @@ Global registry for durable human-facing explainers. Explainers teach concepts, 
 |---|---|---|---|---|---|---|
 | EXPL-0000 | Explainer Title | concept | orientation | draft | `orientation/explainers/EXPL-0000-explainer-title.md` |  |
 | EXPL-0001 | Using and Contributing to GlobalOverlayKit | workflow | orientation | active | `orientation/explainers/EXPL-0001-using-and-contributing-to-globaloverlaykit.md` |  |
+| EXPL-0002 | Godot Desktop Window Feed Contract | concept | architecture | draft | `orientation/explainers/EXPL-0002-godot-desktop-window-feed-contract.md` |  |

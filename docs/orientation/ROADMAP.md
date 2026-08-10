@@ -4,11 +4,11 @@ title: Roadmap
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-09 04:05:17 JST +0900"
+updated_at: "2026-08-09 23:45:00 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST]
 related_specs: [SPEC-0001]
-related_plans: [PLAN-0001]
+related_plans: [PLAN-0001, PLAN-0002]
 related_adrs: [ADR-0001]
 related_sessions:
   - 2026-08-09-project-foundation-and-overlay-boundary
@@ -20,8 +20,9 @@ repo_state:
 # Roadmap
 
 GlobalOverlayKit should grow through consumer evidence, not imagined framework
-flexibility. The next phase is to prove the narrow host in a real message
-overlay before adding coordination or renderer-specific capability.
+flexibility. The project owner selected the SpriteKit desktop-physics demo as
+the first real consumer; Agent Commander remains the second, independent
+message-overlay consumer.
 
 ## Status Legend
 
@@ -35,8 +36,8 @@ overlay before adding coordination or renderer-specific capability.
 | Band | Status | Why it sits here |
 |---|---|---|
 | Clean-room package foundation | Implemented; automated baseline passed | Establishes the smallest reusable seam |
-| Agent Commander consumer | Not started | Proves the actual message-overlay need |
-| SpriteKit falsification consumer | Captured | Tests renderer neutrality with radically different content |
+| SpriteKit falsification consumer | In progress | Tests renderer neutrality with continuously rendered physics content |
+| Agent Commander consumer | Not started | Independently proves the message-overlay need |
 | Public release hardening | Not started | Should follow real consumer and physical evidence |
 
 ## 1. Package Foundation
@@ -56,7 +57,23 @@ The source is present and the documented automated baseline passed on
 2026-08-09. That result does not turn unobserved physical behavior into
 evidence.
 
-## 2. First Real Consumer: Agent Commander
+## 2. First Real Consumer: SpriteKit Physics Demo
+
+[PLAN-0002](../product/plans/PLAN-0002-desktop-physics-falsification-demo/PLAN-0002-desktop-physics-falsification-demo.md)
+promotes `IDEA-0001` into a deliberately narrow proof:
+
+1. host a transparent `SKView` through the existing `NSViewController` seam
+2. use SpriteKit's own physics world for gravity and bouncing balls
+3. keep the display-sized overlay pointer-pass-through
+4. provide Spawn, Clear, Show/Hide, and Quit in a normal control window
+5. record build evidence and human-observed behavior separately
+
+Click-drag is deferred because making the entire display-sized surface
+interactive would intercept normal application clicks. The first slice should
+prove presentation and simulation before introducing a temporary interaction
+mode or global-input policy.
+
+## 3. Independent Message Consumer: Agent Commander
 
 Build a tiny integration in Agent Commander that:
 
@@ -71,16 +88,6 @@ Build a tiny integration in Agent Commander that:
 
 This consumer should identify concrete API friction before the package adds
 more policy.
-
-## 3. Independent Falsification Consumer
-
-Use [IDEA-0001](../product/ideas/IDEA-0001-spritekit-desktop-world-falsification-consumer.md)
-to prototype one screen-sized `SKView` with a controllable character, gravity,
-and bouncing balls.
-
-The prototype succeeds when GlobalOverlayKit remains unchanged or needs only a
-small renderer-neutral correction. A demand for message, game, scene, or tick
-APIs falsifies the current abstraction.
 
 ## 4. Evidence-Driven Hardening
 

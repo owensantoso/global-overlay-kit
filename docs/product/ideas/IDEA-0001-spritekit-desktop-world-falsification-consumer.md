@@ -3,9 +3,9 @@ type: idea
 id: IDEA-0001
 title: SpriteKit Desktop World Falsification Consumer
 domain: product
-status: captured
+status: promoted
 created_at: "2026-08-09 03:50:33 JST +0900"
-updated_at: "2026-08-09 03:56:00 JST +0900"
+updated_at: "2026-08-09 23:45:00 JST +0900"
 owner:
 source:
   type: conversation
@@ -19,7 +19,7 @@ related_prs: []
 related_sessions:
   - 2026-08-09-project-foundation-and-overlay-boundary
 linked_paths: []
-promoted_to: []
+promoted_to: [PLAN-0002]
 repo_state:
   based_on_commit:
   last_reviewed_commit:
@@ -96,3 +96,12 @@ overlay host; it remains renderer-owned until evidence points to panel behavior.
 Promote this idea to a spec and evaluation only when someone is ready to build
 the bounded prototype and record visual, physical, input, and performance
 evidence. Do not add SpriteKit types to GlobalOverlayKit in anticipation.
+
+## Promotion Receipt
+
+Promoted to [PLAN-0002](../plans/PLAN-0002-desktop-physics-falsification-demo/PLAN-0002-desktop-physics-falsification-demo.md)
+on 2026-08-09 when the project owner chose the physics overlay as the first real
+consumer. The approved first slice is deliberately smaller than the full idea:
+one pass-through display surface, gravity, bouncing balls, and a separate
+control window. Character control, click-drag, global input, and multiple
+displays remain future experiments.

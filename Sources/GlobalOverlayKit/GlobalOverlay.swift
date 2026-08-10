@@ -27,6 +27,7 @@ public final class GlobalOverlay {
             defer: false
         )
         panel.contentViewController = contentViewController
+        panel.setFrame(configuration.frame, display: false)
         panel.isReleasedWhenClosed = false
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
@@ -119,4 +120,3 @@ public final class GlobalOverlay {
         panel
     }
 }
-

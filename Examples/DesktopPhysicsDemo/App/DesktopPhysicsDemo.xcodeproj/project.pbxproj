@@ -1,0 +1,474 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		18126084C69A2544554593EA /* DesktopPhysicsAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */; };
+		8694CA4095200538C41726E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A235EE7368E6CAAAC733B4B0 /* ContentView.swift */; };
+		8BA9A0B9960BA452B77898D9 /* DesktopPhysicsSemanticAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */; };
+		968DD36C71844D4717B43E0A /* ActionLatencyDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */; };
+		B0A28FA02E46343A8C0E4BE0 /* SemanticActionTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D031B65336D6FCC4DA3EE6F7 /* SemanticActionTransport.swift */; };
+		B48FDF6E269C34D514826CC7 /* PhysicsDemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */; };
+		BDD9F5FD2221360FED8CCA17 /* DesktopPhysicsDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DACB2D56E6BD2E3684C374C4 /* DesktopPhysicsDemoApp.swift */; };
+		DCC3F5AAD696B51E0A253C12 /* DesktopPhysicsSemanticActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */; };
+		ECE67FF0583925ACE224DA64 /* DesktopPhysicsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3205CC951ECE81728AA789DE /* DesktopPhysicsKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		857A6D7D178685A890E175D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B22D03315B2E4C1277EB2F70 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C43E5CA843F8CA99944EEB26;
+			remoteInfo = DesktopPhysicsDemo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsSemanticAction.swift; sourceTree = "<group>"; };
+		0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsSemanticActionTests.swift; sourceTree = "<group>"; };
+		295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsAppIntents.swift; sourceTree = "<group>"; };
+		3226F3F21BE1E628E44AD7E7 /* DesktopPhysicsDemo */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DesktopPhysicsDemo; path = ..; sourceTree = SOURCE_ROOT; };
+		91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicsDemoModel.swift; sourceTree = "<group>"; };
+		A235EE7368E6CAAAC733B4B0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionLatencyDiagnostics.swift; sourceTree = "<group>"; };
+		D031B65336D6FCC4DA3EE6F7 /* SemanticActionTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticActionTransport.swift; sourceTree = "<group>"; };
+		DACB2D56E6BD2E3684C374C4 /* DesktopPhysicsDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsDemoApp.swift; sourceTree = "<group>"; };
+		DB079D2C71C8287D90739029 /* DesktopPhysicsDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DesktopPhysicsDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF65A71C361792DA22E18F26 /* Desktop Physics Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Desktop Physics Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8AB65B3367C643864DC41028 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECE67FF0583925ACE224DA64 /* DesktopPhysicsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		36E3D705866CB53D9F5948BF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EF65A71C361792DA22E18F26 /* Desktop Physics Demo.app */,
+				DB079D2C71C8287D90739029 /* DesktopPhysicsDemoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		694D2BA1D9F1797293367B31 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */,
+				A235EE7368E6CAAAC733B4B0 /* ContentView.swift */,
+				295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */,
+				DACB2D56E6BD2E3684C374C4 /* DesktopPhysicsDemoApp.swift */,
+				02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */,
+				91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */,
+				D031B65336D6FCC4DA3EE6F7 /* SemanticActionTransport.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		7091474B858C493B27E03E3C /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		7CA64BD97B0E2F29CEBA4102 = {
+			isa = PBXGroup;
+			children = (
+				BD5436DD8FE216F59F50BFF9 /* Packages */,
+				694D2BA1D9F1797293367B31 /* Sources */,
+				7091474B858C493B27E03E3C /* Tests */,
+				36E3D705866CB53D9F5948BF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BD5436DD8FE216F59F50BFF9 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				3226F3F21BE1E628E44AD7E7 /* DesktopPhysicsDemo */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		46E7079AFF4F869230C2104F /* DesktopPhysicsDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7C89439BD64D23429D3DD870 /* Build configuration list for PBXNativeTarget "DesktopPhysicsDemoTests" */;
+			buildPhases = (
+				49000851B54950AB7F2DFF3C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				65CD7D69E78A52D3FD6B327C /* PBXTargetDependency */,
+			);
+			name = DesktopPhysicsDemoTests;
+			packageProductDependencies = (
+			);
+			productName = DesktopPhysicsDemoTests;
+			productReference = DB079D2C71C8287D90739029 /* DesktopPhysicsDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C43E5CA843F8CA99944EEB26 /* DesktopPhysicsDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05D8404F4DC0C9701C4FA21E /* Build configuration list for PBXNativeTarget "DesktopPhysicsDemo" */;
+			buildPhases = (
+				047EDF0DC921E5677917A737 /* Sources */,
+				8AB65B3367C643864DC41028 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DesktopPhysicsDemo;
+			packageProductDependencies = (
+				3205CC951ECE81728AA789DE /* DesktopPhysicsKit */,
+			);
+			productName = DesktopPhysicsDemo;
+			productReference = EF65A71C361792DA22E18F26 /* Desktop Physics Demo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B22D03315B2E4C1277EB2F70 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					46E7079AFF4F869230C2104F = {
+						DevelopmentTeam = GU93K4U9DN;
+						ProvisioningStyle = Automatic;
+					};
+					C43E5CA843F8CA99944EEB26 = {
+						DevelopmentTeam = GU93K4U9DN;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = DDC586F90FE04DFB71555B7B /* Build configuration list for PBXProject "DesktopPhysicsDemo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7CA64BD97B0E2F29CEBA4102;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				77816D1AB2E8C602791E41E2 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 36E3D705866CB53D9F5948BF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C43E5CA843F8CA99944EEB26 /* DesktopPhysicsDemo */,
+				46E7079AFF4F869230C2104F /* DesktopPhysicsDemoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		047EDF0DC921E5677917A737 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				968DD36C71844D4717B43E0A /* ActionLatencyDiagnostics.swift in Sources */,
+				8694CA4095200538C41726E1 /* ContentView.swift in Sources */,
+				18126084C69A2544554593EA /* DesktopPhysicsAppIntents.swift in Sources */,
+				BDD9F5FD2221360FED8CCA17 /* DesktopPhysicsDemoApp.swift in Sources */,
+				8BA9A0B9960BA452B77898D9 /* DesktopPhysicsSemanticAction.swift in Sources */,
+				B48FDF6E269C34D514826CC7 /* PhysicsDemoModel.swift in Sources */,
+				B0A28FA02E46343A8C0E4BE0 /* SemanticActionTransport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49000851B54950AB7F2DFF3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCC3F5AAD696B51E0A253C12 /* DesktopPhysicsSemanticActionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		65CD7D69E78A52D3FD6B327C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C43E5CA843F8CA99944EEB26 /* DesktopPhysicsDemo */;
+			targetProxy = 857A6D7D178685A890E175D7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2E04C18A768F2BE9230753FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		39D6CEE42201738B17618CB9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GU93K4U9DN;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.owensantoso.DesktopPhysicsDemo;
+				PRODUCT_MODULE_NAME = DesktopPhysicsDemo;
+				PRODUCT_NAME = "Desktop Physics Demo";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		4E914EAE53040B6FA1AC8D4D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		718C01CB095EEB4ADABF1C34 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GU93K4U9DN;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.owensantoso.DesktopPhysicsDemo;
+				PRODUCT_MODULE_NAME = DesktopPhysicsDemo;
+				PRODUCT_NAME = "Desktop Physics Demo";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D1F6F63A1581453802F0DF2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = GU93K4U9DN;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Desktop Physics Demo.app/Contents/MacOS/Desktop Physics Demo";
+			};
+			name = Debug;
+		};
+		D5FBD0E74FFA37113940E987 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = GU93K4U9DN;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Desktop Physics Demo.app/Contents/MacOS/Desktop Physics Demo";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		05D8404F4DC0C9701C4FA21E /* Build configuration list for PBXNativeTarget "DesktopPhysicsDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39D6CEE42201738B17618CB9 /* Debug */,
+				718C01CB095EEB4ADABF1C34 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7C89439BD64D23429D3DD870 /* Build configuration list for PBXNativeTarget "DesktopPhysicsDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1F6F63A1581453802F0DF2C /* Debug */,
+				D5FBD0E74FFA37113940E987 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DDC586F90FE04DFB71555B7B /* Build configuration list for PBXProject "DesktopPhysicsDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E04C18A768F2BE9230753FC /* Debug */,
+				4E914EAE53040B6FA1AC8D4D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		77816D1AB2E8C602791E41E2 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3205CC951ECE81728AA789DE /* DesktopPhysicsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesktopPhysicsKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B22D03315B2E4C1277EB2F70 /* Project object */;
+}

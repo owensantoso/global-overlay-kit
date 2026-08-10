@@ -22,6 +22,7 @@ func overlayConstructionAppliesWindowMechanics() {
     #expect(overlay.windowForTesting.isOpaque == false)
     #expect(overlay.windowForTesting.backgroundColor == .clear)
     #expect(overlay.windowForTesting.ignoresMouseEvents)
+    #expect(overlay.frame == configuration.frame)
     #expect(overlay.windowForTesting.collectionBehavior.contains(.canJoinAllSpaces))
     #expect(overlay.windowForTesting.collectionBehavior.contains(.fullScreenAuxiliary))
 }
@@ -60,4 +61,3 @@ func frameUpdatesInPlace() {
     #expect(overlay.frame == updatedFrame)
     #expect(overlay.configuration.frame == updatedFrame)
 }
-

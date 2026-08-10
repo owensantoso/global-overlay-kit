@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Docs Todos
@@ -19,6 +19,16 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
+| open | ADR-0003 | 208 | one canonical owned Git repository contains `Package.swift` at the |
+| open | ADR-0003 | 211 | product and module names, supported macOS/Swift versions, owner, and |
+| open | ADR-0003 | 213 | the public window contract defines coordinates, scope, filtering, |
+| open | ADR-0003 | 215 | broad Accessibility element traversal is separated from the window-only |
+| open | ADR-0003 | 217 | pure contract tests cover multi-display coordinates, filtering, |
+| open | ADR-0003 | 219 | public API comparison has a stored Git baseline and is a required CI gate; |
+| open | ADR-0003 | 220 | Desktop Physics builds and passes its geometry/platform policy tests |
+| open | ADR-0003 | 222 | a consistently signed runtime has passed denied/granted/revoked |
+| open | ADR-0003 | 224 | release notes, migration notes, immutable tag rules, and rollback steps |
+| open | ADR-0003 | 226 | the consuming app commits its accepted `Package.resolved` resolution. |
 | open | marketing/plans/marketing-plan.md | 21 | <step> |
 | open | marketing/plans/marketing-plan.md | 23 | <step> |
 | open | operations/checklists/release-checklist.md | 9 | <precondition> |
@@ -27,8 +37,21 @@ No structured `TODO-*` items found.
 | open | operations/checklists/release-checklist.md | 16 | <command or manual check> |
 | open | operations/checklists/release-checklist.md | 19 | <step> |
 | open | operations/checklists/release-checklist.md | 21 | <step> |
+| open | EXPL-0002 | 248 | Choose the future Godot consumer repository; do not retrofit the existing |
+| open | EXPL-0002 | 251 | Install Godot 4.6.1 export templates and record their source/version. |
+| open | EXPL-0002 | 252 | Implement encoder/decoder fixtures and malformed-input fail-off. |
+| open | EXPL-0002 | 253 | Implement and test explicit Quartz-to-Godot display mapping. |
+| open | EXPL-0002 | 254 | Prove single-Retina, 1× external, mixed-scale, and above/left layouts. |
+| open | EXPL-0002 | 255 | Build and embed a Universal 2 helper through the macOS export preset. |
+| open | EXPL-0002 | 256 | Sign the app and nested helper with stable identities and verify both. |
+| open | EXPL-0002 | 257 | Prove exclusion of both helper and Godot process windows. |
+| open | EXPL-0002 | 258 | Kill the helper, remove/move/resize a window, and change Space while |
+| open | EXPL-0002 | 260 | Measure snapshot, encode, transfer, decode, and window-count load. |
+| open | EXPL-0002 | 261 | Compare SwiftGodot only if process or packaging cost fails a budget. |
 | open | IMPL-0000-00 | 143 | <done condition> |
 | open | IMPL-0000-00 | 144 | <done condition> |
 | open | IMPL-0000-00 | 149 | <verification complete> |
 | open | IMPL-0001-01 | 146 | Full `./run check` passes. |
 | open | IMPL-0001-01 | 147 | Parent plan and current-state closeout are synchronized. |
+| open | IMPL-0003-01 | 60 | Verification complete |
+| open | IMPL-0003-01 | 62 | Physical recovery and Command-Tab verified |

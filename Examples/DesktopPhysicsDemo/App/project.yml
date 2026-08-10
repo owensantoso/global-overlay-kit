@@ -1,0 +1,69 @@
+name: DesktopPhysicsDemo
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+packages:
+  DesktopPhysicsKit:
+    path: ..
+targets:
+  DesktopPhysicsDemo:
+    type: application
+    platform: macOS
+    productName: Desktop Physics Demo
+    sources:
+      - path: Sources
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Desktop Physics Demo
+        CFBundleName: Desktop Physics Demo
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHighResolutionCapable: true
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Viewer
+            CFBundleURLName: com.owensantoso.DesktopPhysicsDemo.action
+            CFBundleURLSchemes:
+              - owensantoso-desktopphysics
+    dependencies:
+      - package: DesktopPhysicsKit
+        product: DesktopPhysicsKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.owensantoso.DesktopPhysicsDemo
+        PRODUCT_NAME: Desktop Physics Demo
+        PRODUCT_MODULE_NAME: DesktopPhysicsDemo
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+        DEVELOPMENT_TEAM: GU93K4U9DN
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
+  DesktopPhysicsDemoTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: DesktopPhysicsDemo
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+        DEVELOPMENT_TEAM: GU93K4U9DN
+schemes:
+  DesktopPhysicsDemo:
+    build:
+      targets:
+        DesktopPhysicsDemo: all
+        DesktopPhysicsDemoTests: [test]
+    test:
+      targets:
+        - DesktopPhysicsDemoTests

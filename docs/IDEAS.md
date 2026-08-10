@@ -2,7 +2,7 @@
 type: generated-view
 title: Idea Registry
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Idea Registry
@@ -14,4 +14,6 @@ Global registry for lightweight ideas. Ideas are captured sparks, not approved s
 | ID | Title | Domain | Status | Path | Source | Promoted To |
 |---|---|---|---|---|---|---|
 | IDEA-0000 | <Idea Title> | product | captured | `product/ideas/IDEA-0000-idea-title.md` | conversation |  |
-| IDEA-0001 | SpriteKit Desktop World Falsification Consumer | product | captured | `product/ideas/IDEA-0001-spritekit-desktop-world-falsification-consumer.md` | conversation / Future desktop-game concept used to stress-test whether the overlay host is genuinely renderer-neutral. |  |
+| IDEA-0001 | SpriteKit Desktop World Falsification Consumer | product | promoted | `product/ideas/IDEA-0001-spritekit-desktop-world-falsification-consumer.md` | conversation / Future desktop-game concept used to stress-test whether the overlay host is genuinely renderer-neutral. | PLAN-0002 |
+| IDEA-0002 | Agent-Native Desktop World Sandbox | product | exploring | `product/ideas/IDEA-0002-agent-native-desktop-world-sandbox.md` | conversation |  |
+| IDEA-0003 | Ambient Multiplayer Place | product | exploring | `product/ideas/IDEA-0003-ambient-multiplayer-place.md` | conversation / Desktop Multiplayer Presence concept and mockup discussion |  |

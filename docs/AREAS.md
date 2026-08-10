@@ -2,7 +2,7 @@
 type: generated-view
 title: Architecture Area Registry
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Architecture Area Registry
@@ -11,5 +11,6 @@ updated_at: "2026-08-09 04:11:21 JST +0900"
 
 | ID | Title | Status | Path |
 |---|---|---|---|
+| AREA-DESKTOP-PHYSICS | Desktop Physics Adapter | active | `architecture/areas/AREA-DESKTOP-PHYSICS.md` |
 | AREA-EXAMPLE | Example | draft | `architecture/areas/AREA-EXAMPLE.md` |
 | AREA-OVERLAY-HOST | Overlay Host | active | `architecture/areas/AREA-OVERLAY-HOST.md` |

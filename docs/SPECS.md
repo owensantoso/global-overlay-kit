@@ -2,7 +2,7 @@
 type: generated-view
 title: Spec Registry
 status: generated
-updated_at: "2026-08-09 04:11:21 JST +0900"
+updated_at: "2026-08-11 04:00:59 JST +0900"
 ---
 
 # Spec Registry
@@ -15,3 +15,4 @@ Global registry for durable specs. The repo tree and frontmatter are the source 
 |---|---|---|---|---|---|---|
 | SPEC-0000 | <Spec title> | feature | product | draft | `product/specs/SPEC-0000-spec-title.md` | conversation |
 | SPEC-0001 | Global Overlay Surface Host | architecture | product | approved | `product/specs/SPEC-0001-global-overlay-surface-host.md` | conversation / Approved while separating the reusable overlay substrate from Agent Commander and Live Text Chat presentation code. |
+| SPEC-0002 | Reusable Desktop Physics World | feature | product | approved | `product/specs/SPEC-0002-reusable-desktop-physics-world.md` | conversation |
