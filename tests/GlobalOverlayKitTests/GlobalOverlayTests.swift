@@ -45,6 +45,24 @@ func interactionCanChangeInPlace() {
 }
 
 @MainActor
+@Test("Shadow can change without recreating the overlay")
+func shadowCanChangeInPlace() {
+    _ = NSApplication.shared
+    let overlay = GlobalOverlay(
+        configuration: GlobalOverlayConfiguration(
+            frame: CGRect(x: 0, y: 0, width: 200, height: 120),
+            hasShadow: false
+        ),
+        contentViewController: NSViewController()
+    )
+
+    overlay.setHasShadow(true)
+
+    #expect(overlay.configuration.hasShadow)
+    #expect(overlay.windowForTesting.hasShadow)
+}
+
+@MainActor
 @Test("Frame updates preserve one overlay instance")
 func frameUpdatesInPlace() {
     _ = NSApplication.shared

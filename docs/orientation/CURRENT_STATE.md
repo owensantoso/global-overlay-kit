@@ -33,8 +33,8 @@ Mac.
 - `GlobalOverlayConfiguration` covers initial frame, minimum size, pointer
   interaction, move/resize flags, all-Spaces/full-screen flags, shadow,
   accessibility label, and an optional AppKit frame-autosave name.
-- Callers can show, hide, change pointer pass-through, update a frame, or fill a
-  selected `NSScreen`.
+- Callers can show, hide, change pointer pass-through or native shadow in place,
+  update a frame, or fill a selected `NSScreen`.
 - Focused tests inspect the constructed panel contract and in-place interaction
   and frame updates.
 - The root `./run` command provides build, test, documentation, and combined

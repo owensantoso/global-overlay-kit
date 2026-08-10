@@ -87,6 +87,12 @@ public final class GlobalOverlay {
         panel.ignoresMouseEvents = interaction == .passThrough
     }
 
+    /// Changes the native surface shadow without recreating the overlay.
+    public func setHasShadow(_ hasShadow: Bool) {
+        configuration.hasShadow = hasShadow
+        panel.hasShadow = hasShadow
+    }
+
     public func setFrame(_ frame: CGRect, display: Bool = true) {
         configuration.frame = frame
         panel.setFrame(frame, display: display)
