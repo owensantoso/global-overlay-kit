@@ -2,7 +2,7 @@
 type: generated-view
 title: Idea Registry
 status: generated
-updated_at: "2026-08-11 07:05:16 JST +0900"
+updated_at: "2026-08-11 08:31:03 JST +0900"
 ---
 
 # Idea Registry

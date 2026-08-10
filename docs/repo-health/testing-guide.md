@@ -4,7 +4,7 @@ title: Testing Guide
 domain: repo-health
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-10 06:07:00 JST +0900"
+updated_at: "2026-08-11 08:27:00 JST +0900"
 owner:
 surface: GlobalOverlayKit Swift package
 areas: [AREA-OVERLAY-HOST, AREA-DESKTOP-PHYSICS]
@@ -40,8 +40,10 @@ From the repository root:
 
 1. `swift build`
 2. `swift test`
-3. tests for `Examples/DesktopPhysicsDemo`'s `DesktopPhysicsKit` target
-4. Xcode build of the signed Desktop Physics Demo app
+3. when `../DesktopGameCore` is present, tests for
+   `Examples/DesktopPhysicsDemo`'s `DesktopPhysicsKit` target
+4. when that sibling is present, Xcode build of the signed Desktop Physics Demo
+   app; otherwise an explicit credentialed-example skip
 5. committed structured-doc validation
 6. local Markdown link validation
 7. the Agent Continuity smoke test
@@ -58,7 +60,7 @@ file existing on disk is not evidence that a remote run has passed.
 |---|---|---|---|
 | Compile | `swift build` | Package source type-checks and links in the local toolchain | Runtime window behavior |
 | Automated contract | `swift test` | Constructed panel properties and in-place setters match focused assertions | Cross-process pointer routing, focus, Spaces, or pixels |
-| Desktop-world tests | `swift test --package-path Examples/DesktopPhysicsDemo` | Size mapping, cursor coordinates/resizing, shape bodies, control-family filtering, run/sit input, character state/render coverage, derived controller values, buffered input, scene-level grounding/jump/wall-slide/wall-jump admission, shipped-frame painted picking, pointer capture, coincident-plane traversal, permission-free geometry, and drag lifecycle | Real cursor collision, event-tap admission, pixel-picking feel, drag event routing, wall-traversal feel, animation or movement feel, or Command-Tab delivery |
+| Desktop-world tests | `./run desktop-physics-check` with private sibling `../DesktopGameCore` | Size mapping, cursor coordinates/resizing, shape bodies, control-family filtering, run/sit input, character state/render coverage, derived controller values, buffered input, scene-level grounding/jump/wall-slide/wall-jump admission, shipped-frame painted picking, pointer capture, coincident-plane traversal, permission-free geometry, drag lifecycle, and signed app build | Public clones without the private sibling explicitly skip this optional example; automated success still does not prove real cursor collision, event-tap admission, pixel-picking feel, drag event routing, wall-traversal feel, animation or movement feel, or Command-Tab delivery |
 | Signed app | Xcode build plus `codesign --verify --deep --strict` | Exact app bundle builds with the intended stable identity | Accessibility trust or actual protected key suppression |
 | Documentation | `./run docs` | IDs, frontmatter, generated views, local links, and wrapper smoke | Package behavior |
 | Diff hygiene | `git diff --check` | No whitespace errors in the diff | Correctness |
@@ -81,8 +83,19 @@ The focused tests assert:
 - preservation of the configured initial frame after installing an arbitrary
   controller whose root view has its own size
 
-The nested package's 41 XCTest cases and 44 Swift Testing cases additionally
-assert:
+The nested package's 43 XCTest cases and 12 Swift Testing cases additionally
+assert the SpriteKit/macOS consumer contract. The sibling private
+`DesktopGameCore` repository owns its 36 focused Swift tests plus schema and
+Godot fixture gates; run that repository's `./run check` when the portable
+contract changes.
+
+GitHub Actions invokes `./run desktop-physics-check`. Ordinary public checkouts
+loudly skip because the private sibling is unavailable. A credentialed paired
+runner with the sibling present runs the complete nested test and app-build
+gate. Making that dependency clone-portable remains a separate private-release
+decision.
+
+The nested consumer tests assert:
 
 - explicit and random-range object sizes plus circle, square, and triangle
   physics bodies

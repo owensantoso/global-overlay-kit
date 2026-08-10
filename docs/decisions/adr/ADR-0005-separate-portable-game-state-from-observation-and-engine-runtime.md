@@ -3,9 +3,9 @@ type: adr
 id: ADR-0005
 title: Separate Portable Game State From Observation And Engine Runtime
 domain: architecture
-status: proposed
+status: accepted
 created_at: "2026-08-11 04:57:05 JST +0900"
-updated_at: "2026-08-11 04:57:05 JST +0900"
+updated_at: "2026-08-11 08:27:00 JST +0900"
 areas: [AREA-DESKTOP-PHYSICS]
 deciders:
   - project owner
@@ -126,8 +126,10 @@ Risks:
 Choose Candidate B.
 
 Add a pure nested `DesktopGameCore` target before implementing the next
-SpriteKit-specific feature wave. Keep it nested until both the current
-SpriteKit authority and a real Godot consumer validate the public contract.
+SpriteKit-specific feature wave. The original extraction gate required both
+the current SpriteKit authority and a real Godot consumer to validate the
+public contract. The extraction result below narrows that timing gate without
+changing the later rendered-consumer acceptance boundary.
 The wire protocol is named `desktop-game-state`; the module name does not make
 JSON encoding its only job.
 
@@ -157,6 +159,27 @@ fixed-step deterministic physics core and a separate decision.
 
 Start with fixture-tested JSON or newline-delimited JSON. Encoding can move to
 a measured binary format later without changing the domain schema.
+
+## Validation and extraction result
+
+The nested Swift target first proved the contract and the SpriteKit interaction
+policies. A separate Godot 4.6 headless consumer then accepted the same planar
+and true-depth fixtures. That headless evidence is sufficient to validate the
+repository/decode boundary, but it does not replace the still-required rendered
+Godot consumer canary. On that narrower evidence, `DesktopGameCore` moved to
+the private local sibling repository at
+`/Users/macintoso/Documents/VSCode/DesktopGameCore`, and Desktop Physics now
+uses its Swift product through a local path. The sibling repository owns the
+JSON Schema, fixtures, Swift tests, and Godot add-on. It has no remote, tag, or
+public release. The sibling's ADR-0001 records why this extraction timing
+changed while preserving the engine and human-acceptance boundaries.
+
+Because GlobalOverlayKit is public and DesktopGameCore is private, the tracked
+Desktop Physics package is now an explicitly optional credentialed/paired-
+workspace example. Root checks and CI run it fully when the sibling exists and
+loudly skip only that example when it does not. Clone-portable options remain
+open: a credentialed private tag, moving the demo private, or separately
+authorizing a public core.
 
 ## Three-Dimensional Coordinate Contract
 

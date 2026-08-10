@@ -5,7 +5,7 @@ title: Desktop Physics Adapter
 domain: architecture
 status: active
 created_at: "2026-08-10 00:18:00 JST +0900"
-updated_at: "2026-08-11 04:57:05 JST +0900"
+updated_at: "2026-08-11 08:27:00 JST +0900"
 owners: []
 related_specs: [SPEC-0002]
 related_plans: [PLAN-0003]
@@ -34,7 +34,7 @@ desktop observer, or engine ownership.
 - one selected display's overlay plus SpriteKit scene integration
 - desktop-world object vocabulary, spawning, and diagnostics
 - portable world-session, entity, surface, event, input, and asset-reference
-  vocabulary through the proposed pure `DesktopGameCore` boundary
+  vocabulary through the pure sibling `DesktopGameCore` boundary
 - pure controller, drag-selection, and wall-traversal policies that do not need
   a presented SpriteKit scene
 - cursor-to-scene coordinate mapping and optional cursor collider
@@ -75,7 +75,7 @@ and owns only SwiftUI state/presentation.
 ```text
 DesktopPhysicsDemo controls, one-shot App Intent, or strict semantic App Action
   -> DesktopPhysicsWorld commands
-    -> DesktopGameCore portable values and pure rules (proposed)
+    -> DesktopGameCore portable values and pure rules
     -> MacDesktopWindowGeometry observation (optional)
       -> DesktopSurfaceKit permission-free observation and visible geometry
       -> optional focus observation plus product-owned scene coordinates
@@ -169,12 +169,18 @@ provenance and readiness transition are recorded in
 
 The portable state/rules boundary is defined in
 [ADR-0005](../../decisions/adr/ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md).
-The Foundation-only `DesktopGameCore` target now implements its version-1
-values and pure interaction policies. The SpriteKit authority consumes the
+The Foundation-only `DesktopGameCore` product now comes from the private local
+sibling `/Users/macintoso/Documents/VSCode/DesktopGameCore`; no source or
+fixture copy remains in this public repository. The SpriteKit authority consumes the
 painted-candidate and coincident-plane wall-traversal policies while retaining
 alpha-mask decoding/cache, node transforms, pointer capture, contacts, and
 physics mutation. It does not yet emit portable snapshots/events or consume a
 replica state stream.
+
+This makes Desktop Physics an optional paired-workspace example for public
+clones. `./run desktop-physics-check`, root `./run check`, and CI run the nested
+tests and signed app build when `../DesktopGameCore` exists, and print an
+explicit private-dependency skip when it does not.
 
 The selected-display geometry adapter no longer checks Accessibility trust.
 Ordinary Quartz rectangles remain available independently of the separate

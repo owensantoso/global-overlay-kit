@@ -4,6 +4,14 @@ This nested package is the reusable desktop-world layer built on top of
 GlobalOverlayKit and SpriteKit. It is intentionally not part of
 GlobalOverlayKit's renderer-neutral API.
 
+This tracked example is optional for public clones. Its canonical portable
+state dependency lives in the private sibling repository
+`../../../DesktopGameCore`; pair both repositories in the same parent folder
+before running this package, `./run demo`, or `./run desktop-physics-check`.
+The root public verification baseline prints an explicit skip when the sibling
+is absent. No fallback source copy is kept here because that would recreate
+the protocol drift this extraction removes.
+
 ```swift
 import DesktopPhysicsKit
 
@@ -117,6 +125,11 @@ Run library tests directly with:
 ```bash
 swift test --package-path Examples/DesktopPhysicsDemo
 ```
+
+The private sibling must exist first. Future clone-portable options are a
+credentialed private tagged dependency, moving this demo into a private
+consumer repository, or separately authorizing a public core. None has been
+selected or published.
 
 The target stays nested and unreleased until a second real consumer validates
 the API. It should not become a separate engine repository merely because the

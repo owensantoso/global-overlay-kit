@@ -74,7 +74,11 @@ SpriteKit, Metal, and ordinary AppKit callers can instead provide any
 
 ## Try the desktop physics example
 
-From the repository root:
+Desktop Physics is an optional paired-workspace example because it depends on
+the private sibling `../DesktopGameCore`. A public clone without that sibling
+can still build and test GlobalOverlayKit; `./run check` prints an explicit
+skip for the private example. With an authorized paired checkout, from this
+repository root run:
 
 ```bash
 ./run demo
@@ -119,8 +123,10 @@ objects/player samples. It is opt-in so ordinary demo use stays quiet.
 ./run check
 ```
 
-`./run check` also tests the nested `DesktopPhysicsKit` library and builds the
-signed app consumer so both package seams cannot silently drift.
+When `../DesktopGameCore` is present, `./run check` also tests the nested
+`DesktopPhysicsKit` library and builds the signed app consumer so both package
+seams cannot silently drift. When it is absent, the public baseline loudly
+skips only that credentialed example and still verifies GlobalOverlayKit.
 
 Start with [the current-state document](docs/orientation/CURRENT_STATE.md), then
 read [the architecture](docs/orientation/ARCHITECTURE.md) and

@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-11 06:22:00 JST +0900"
+updated_at: "2026-08-11 08:27:00 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST, AREA-DESKTOP-PHYSICS]
 related_specs: [SPEC-0001, SPEC-0002]
@@ -184,8 +184,11 @@ Mac.
 - Godot reuse now has two separately versioned proposed seams. ADR-0004's
   `desktop-window-feed` supplies local macOS observation to a future Godot
   authority. ADR-0005's `desktop-game-state` supplies privacy-filtered
-  surfaces, entities, assets, and events to replicas. The pure nested
-  `DesktopGameCore` target is now implemented with validated Foundation-only
+  surfaces, entities, assets, and events to replicas. The pure
+  `DesktopGameCore` target has moved to the private local sibling repository
+  `/Users/macintoso/Documents/VSCode/DesktopGameCore`; this demo consumes its
+  Swift product through a reversible local path and no longer carries a source
+  or fixture copy. The package is implemented with validated Foundation-only
   values, frozen planar/depth JSON fixtures, base-sequence recovery, a planar
   capability gate, deterministic painted-candidate selection, canonical
   quaternion signs, an exclusive replica coordinator that validates, applies,
@@ -196,10 +199,17 @@ Mac.
   JSON fixes the origin at the bottom-left of the screen plane and the units as
   world units; a fixture proves conversion from top-left observation space.
   Deltas reject duplicate and conflicting identity operations at construction
-  and decode. The Godot fixture consumer and SpriteKit state adapter are not
-  implemented yet. Version-1 state is right-handed X/Y/Z with the collapsed desktop
+  and decode. The sibling's Godot 4.6 snapshot fixture consumer now passes
+  planar and true-depth coordinate/orientation/identity/layer mapping, strict
+  version failure, and additive optional-field tolerance. The SpriteKit
+  authoritative snapshot adapter is not implemented yet. Version-1 state is right-handed X/Y/Z with the collapsed desktop
   on `Z = 0`; SpriteKit remains the first planar authority. A local Godot pipe probe passed, but
   the current 2x Retina mismatch still blocks collider-ready window-feed work.
+  The sibling package has no remote or tag; the local path is intentionally not
+  clone-portable until a separately approved private release candidate. Since
+  GlobalOverlayKit is public, Desktop Physics is explicitly an optional paired-
+  workspace example: root checks and CI fully verify it when
+  `../DesktopGameCore` exists and loudly skip only that example when absent.
 - DesktopSurfaceKit geometry and the nested selected-display adapter are now
   permission-free. The obsolete Accessibility checks and ApplicationServices
   link were removed from the geometry/world path, with injected observation

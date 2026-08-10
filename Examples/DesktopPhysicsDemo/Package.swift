@@ -9,10 +9,6 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "DesktopGameCore",
-            targets: ["DesktopGameCore"]
-        ),
-        .library(
             name: "DesktopPhysicsKit",
             targets: ["DesktopPhysicsKit"]
         ),
@@ -27,13 +23,13 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../.."),
+        .package(path: "../../../DesktopGameCore"),
         .package(
             url: "https://github.com/owensantoso/DesktopSurfaceKit.git",
             exact: "0.2.0-rc.1"
         )
     ],
     targets: [
-        .target(name: "DesktopGameCore"),
         .target(
             name: "MacDesktopWindowGeometry",
             dependencies: [
@@ -62,7 +58,10 @@ let package = Package(
         .target(
             name: "DesktopPhysicsKit",
             dependencies: [
-                "DesktopGameCore",
+                .product(
+                    name: "DesktopGameCore",
+                    package: "DesktopGameCore"
+                ),
                 .product(
                     name: "GlobalOverlayKit",
                     package: "GlobalOverlayKit"
@@ -76,16 +75,14 @@ let package = Package(
         .testTarget(
             name: "DesktopPhysicsKitTests",
             dependencies: [
-                "DesktopGameCore",
+                .product(
+                    name: "DesktopGameCore",
+                    package: "DesktopGameCore"
+                ),
                 "DesktopPhysicsKit",
                 "MacDesktopWindowGeometry",
                 "MacDesktopWindowFocusAdapter"
             ]
-        ),
-        .testTarget(
-            name: "DesktopGameCoreTests",
-            dependencies: ["DesktopGameCore"],
-            resources: [.process("Fixtures")]
         )
     ]
 )

@@ -7,8 +7,28 @@ DEMO_PACKAGE_DIR="$ROOT_DIR/Examples/DesktopPhysicsDemo"
 DEMO_APP_DIR="$DEMO_PACKAGE_DIR/App"
 DEMO_DERIVED_DATA="$DEMO_APP_DIR/DerivedData"
 DEMO_APP="$DEMO_DERIVED_DATA/Build/Products/Debug/Desktop Physics Demo.app"
+DESKTOP_GAME_CORE_DIR="$ROOT_DIR/../DesktopGameCore"
+
+desktop_game_core_is_available() {
+  [[ -f "$DESKTOP_GAME_CORE_DIR/Package.swift" ]]
+}
+
+print_private_example_skip() {
+  echo "SKIP DesktopPhysicsDemo: private sibling DesktopGameCore is absent at $DESKTOP_GAME_CORE_DIR"
+  echo "Public clones can run the core GlobalOverlayKit checks without private credentials."
+}
+
+require_desktop_game_core() {
+  if desktop_game_core_is_available; then
+    return
+  fi
+  print_private_example_skip >&2
+  echo "Pair this checkout with the private DesktopGameCore repository before using demo commands." >&2
+  exit 1
+}
 
 build_demo_app() {
+  require_desktop_game_core
   (
     cd "$DEMO_APP_DIR"
     xcodegen generate --spec project.yml
@@ -22,6 +42,15 @@ build_demo_app() {
   )
 }
 
+check_desktop_physics_demo() {
+  if ! desktop_game_core_is_available; then
+    print_private_example_skip
+    return
+  fi
+  swift test --package-path "$DEMO_PACKAGE_DIR"
+  build_demo_app
+}
+
 print_help() {
   cat <<'EOF'
 GlobalOverlayKit commands
@@ -30,6 +59,7 @@ GlobalOverlayKit commands
   ./run test     run the Swift tests
   ./run demo     build and launch the desktop physics example
   ./run demo-trace  launch the demo with bounded trajectory logs
+  ./run desktop-physics-check  verify the optional paired-workspace example
   ./run docs     refresh and validate Agent Continuity docs
   ./run check    run the complete local verification baseline
 
@@ -57,6 +87,9 @@ case "${1:-help}" in
     build_demo_app
     DESKTOP_PHYSICS_TRACE=1 open -n "$DEMO_APP"
     ;;
+  desktop-physics-check)
+    check_desktop_physics_demo
+    ;;
   docs)
     cd "$ROOT_DIR"
     "$DOCS_TOOL" update
@@ -68,8 +101,7 @@ case "${1:-help}" in
     cd "$ROOT_DIR"
     swift build
     swift test
-    swift test --package-path Examples/DesktopPhysicsDemo
-    build_demo_app
+    check_desktop_physics_demo
     "$DOCS_TOOL" check
     "$DOCS_TOOL" check-links
     tests/agent-continuity-docs-smoke.sh

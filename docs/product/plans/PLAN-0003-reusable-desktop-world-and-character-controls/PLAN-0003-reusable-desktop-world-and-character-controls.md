@@ -5,7 +5,7 @@ title: Reusable Desktop World And Character Controls
 domain: product
 status: in_progress
 created_at: "2026-08-10 00:17:57 JST +0900"
-updated_at: "2026-08-11 04:57:05 JST +0900"
+updated_at: "2026-08-11 08:27:00 JST +0900"
 owner:
 sequence:
   roadmap: "3.0"
@@ -206,6 +206,18 @@ SpriteKit interaction adapter brief:
 - Remove the Accessibility trust gate from permission-free window geometry.
   Add focused-window observation only through a separately approved optional
   DesktopSurfaceKit product and release candidate.
+
+Extraction result: complete locally. After the nested Swift target and a Godot
+4.6 fixture consumer both passed, the canonical source moved to the private
+sibling `/Users/macintoso/Documents/VSCode/DesktopGameCore`. This demo now uses
+that Swift package through `../../../DesktopGameCore`; the sibling owns schema,
+fixtures, core tests, and the Godot add-on. No remote or version tag was
+created, so clone-portable distribution remains an explicit later gate.
+Because this repository is public and the sibling is private, the tracked demo
+is an optional credentialed/paired-workspace example. Root checks and CI run it
+fully when the sibling exists and explicitly skip it otherwise. Future options
+remain open: a private tagged dependency, moving the demo private, or separately
+authorizing a public core.
 
 ## Validation
 

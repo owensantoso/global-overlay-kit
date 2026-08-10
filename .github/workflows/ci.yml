@@ -13,6 +13,8 @@ jobs:
         run: swift --version
       - name: Build and test
         run: swift test
+      - name: Optional private Desktop Physics example
+        run: ./run desktop-physics-check
       - name: Validate documentation
         run: |
           scripts/agent-continuity-docs check
