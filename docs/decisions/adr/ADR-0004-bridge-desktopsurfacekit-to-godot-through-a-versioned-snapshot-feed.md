@@ -5,7 +5,7 @@ title: Bridge DesktopSurfaceKit to Godot Through a Versioned Snapshot Feed
 domain: architecture
 status: proposed
 created_at: "2026-08-11 02:31:56 JST +0900"
-updated_at: "2026-08-11 02:37:42 JST +0900"
+updated_at: "2026-08-11 04:57:05 JST +0900"
 areas: [AREA-DESKTOP-PHYSICS]
 deciders:
   - project owner
@@ -25,8 +25,8 @@ linked_paths:
   - docs/orientation/explainers/EXPL-0002-godot-desktop-window-feed-contract.md
   - docs/research/RSCH-0006-game-engine-overlay-compatibility-layer.md
 repo_state:
-  based_on_commit: 102cac2110afa282633706e80a33c3a60265cc25
-  last_reviewed_commit: 102cac2110afa282633706e80a33c3a60265cc25
+  based_on_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
+  last_reviewed_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
 ---
 
 # ADR-0004 - Bridge DesktopSurfaceKit to Godot Through a Versioned Snapshot Feed
@@ -61,6 +61,12 @@ reported a Core Graphics display frame of 1800×1169 and a Godot screen size of
 screen-space units rather than points or pixels, while Godot documents its
 screen geometry in pixels. Mixed-scale and multi-display mapping remains a
 physical and fixture-test gate.
+
+This feed has one job: deliver local macOS observation facts to whichever game
+engine is authoritative on that Mac. It is not the multiplayer replication
+protocol. A remote peer receives the privacy-filtered canonical game state
+defined by [ADR-0005](ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md),
+not raw DesktopSurfaceKit metadata.
 
 ## Candidates
 
@@ -120,6 +126,11 @@ identity, coordinates, availability, revisions, and compatibility. NDJSON is
 the first encoding, not a permanent mandate. The helper lives outside
 `DesktopSurfaceKit`; replacing its transport must not change observation or
 game collision ownership.
+
+Call this schema `desktop-window-feed`. Keep it versioned independently from
+the `desktop-game-state` envelope. A Godot replica of a SpriteKit authority
+does not need the window feed; it consumes canonical game state. A Godot
+authority needs the window feed locally, then emits canonical game state.
 
 The exact proposed caller API, schema, lifecycle, coordinates, packaging,
 versioning, and implementation gates live in
@@ -185,6 +196,8 @@ overlay consumer.
 - Use axis-neutral sides across the wire.
 - Clear geometry on unavailable, stale, malformed, incompatible, or dead feeds.
 - Treat window IDs as one-live-window/session identities only.
+- Keep process IDs, application names, titles, and local window numbers out of
+  remote game-state packets by default.
 - Never snapshot on the render or physics cadence.
 - Prove display mapping and signed export before describing the feed as
   collider-ready or plug-and-play.

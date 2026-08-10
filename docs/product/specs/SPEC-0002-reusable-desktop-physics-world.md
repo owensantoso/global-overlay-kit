@@ -6,7 +6,7 @@ spec_type: feature
 domain: product
 status: approved
 created_at: "2026-08-10 00:17:57 JST +0900"
-updated_at: "2026-08-11 04:35:00 JST +0900"
+updated_at: "2026-08-11 04:57:05 JST +0900"
 owner:
 source:
   type: conversation
@@ -16,7 +16,7 @@ areas: [AREA-DESKTOP-PHYSICS]
 related_plans: [PLAN-0003]
 related_issues: []
 related_prs: []
-related_adrs: [ADR-0001, ADR-0002]
+related_adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005]
 related_sessions:
   - 2026-08-10-reusable-desktop-world-and-controls
 supersedes: []
@@ -24,8 +24,8 @@ superseded_by: []
 linked_paths:
   - Examples/DesktopPhysicsDemo
 repo_state:
-  based_on_commit: 102cac2110afa282633706e80a33c3a60265cc25
-  last_reviewed_commit: 102cac2110afa282633706e80a33c3a60265cc25
+  based_on_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
+  last_reviewed_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
 ---
 
 # SPEC-0002 - Reusable Desktop Physics World
@@ -131,6 +131,9 @@ deferred until a real consumer demonstrates the need.
 - `Sources/GlobalOverlayKit` must not import SpriteKit or define physics,
   entity, character, cursor, or input types.
 - Desktop-world behavior must live in a separate `DesktopPhysicsKit` target.
+- Portable state values and deterministic gameplay policies must move behind a
+  pure `DesktopGameCore` target before the next engine-specific feature wave.
+  That target must not import AppKit, Core Graphics, SpriteKit, or Godot.
 
 ### R2 - Reuse The Native Engine
 
@@ -138,6 +141,9 @@ deferred until a real consumer demonstrates the need.
   cadence.
 - The adapter may configure and coordinate SpriteKit but must not duplicate its
   engine concepts without a caller-facing need.
+- A future Godot adapter consumes the same canonical game-state values and
+  rules. SpriteKit and Godot are not required to produce deterministic matching
+  solver trajectories.
 
 ### R3 - Object Spawning
 
@@ -233,6 +239,9 @@ deferred until a real consumer demonstrates the need.
   padding inside the sprite rectangle must remain click-through; the larger
   physics collider must not define mouse capture. Shape players and loose
   objects use their painted path rather than a rectangular node bound.
+- The portable player visual names its asset revision, animation frame or
+  phase, draw transform, and pick-mask reference. Each engine resolves and
+  caches the mask locally; multiplayer state must not send per-frame pixels.
 - Disabling or stopping ends any active drag and immediately returns every
   overlay point to click-through behavior.
 
@@ -280,12 +289,13 @@ deferred until a real consumer demonstrates the need.
 - Window platforms are optional, off by default, and controlled from the
   normal control window with visible status and recovery text.
 - Canonical `DesktopSurfaceKit` owns on-screen application-window enumeration,
-  stable-enough Core Graphics window IDs, and filtering. A narrow
-  macOS-specific consumer adapter owns Accessibility gating and top-left-global
-  to selected-scene coordinate conversion.
-- Core Graphics supplies window IDs and frames. Accessibility is an explicit
-  fail-off feature gate shared with global controls; the implementation must
-  not imply that Accessibility supplies these rectangles.
+  live Core Graphics window IDs, filtering, and permission-free geometry. A
+  narrow macOS-specific consumer adapter owns top-left-global to selected-scene
+  coordinate conversion.
+- Core Graphics supplies window IDs and frames without Accessibility
+  permission. Missing Accessibility permission must not remove ordinary window
+  platforms. Accessibility remains required only for global controls and the
+  separately optional focused-window observer.
 - The provider excludes the current process, desktop elements, nonzero window
   layers, transparent windows, small invalid frames, and nonregular apps. It
   clips qualifying frames to the one selected display.
@@ -364,11 +374,58 @@ deferred until a real consumer demonstrates the need.
   names and titles are display metadata, not durable application identity.
   Optional metadata is added only when the system source and availability
   contract are reliable enough to document and test.
+- Optional focused-window status is resolved against one exact window snapshot
+  by a separately imported, nonprompting Accessibility-backed product. Zero,
+  multiple, unavailable, and permission-required results remain explicit; the
+  package must never guess from frontmost z-order.
+
+### R13 - Portable Multiplayer State And Engine Boundary
+
+- Local macOS observation, canonical/network game state, engine-private solver
+  state, and renderer-only state are separate ownership categories.
+- A versioned `desktop-game-state` envelope carries a world-session ID,
+  sequence, optional base sequence, tick, and one snapshot, delta, input, or
+  event payload.
+- Canonical snapshots use a right-handed three-dimensional world with X
+  screen-right, Y screen-up, positive Z toward the viewer, negative Z into the
+  world, and the collapsed desktop at `Z = 0`. Values use `Double`; adapters
+  own Quartz/SpriteKit/Godot conversion.
+- Entity pose uses a three-component position and normalized quaternion.
+  Linear and angular velocity are three-component vectors. SpriteKit supports
+  the planar subset and must reject nonplanar authoritative state rather than
+  silently flattening it; Godot may consume full depth.
+- Window-source front-to-back order is `desktopLayerRank` provenance, not game
+  Z. The game separately assigns an extruded segment's collision depth range.
+- A full snapshot contains privacy-filtered surfaces, rules, avatars, objects,
+  gameplay-visible locomotion, and asset references. It never contains AppKit,
+  Core Graphics, SpriteKit, or Godot types.
+- Authority-minted entity IDs are never reused within a world session. Raw
+  macOS window IDs remain local to an observation epoch; peers receive random
+  session-local source aliases instead.
+- App names, process IDs, titles, document metadata, and Window Server numbers
+  are excluded from remote state by default. Focus sharing, if ever enabled,
+  uses an explicit privacy-controlled source alias.
+- New replicas and recovery paths receive full snapshots. Deltas name one
+  exact base sequence; a missing or reordered base requires a full snapshot.
+- One engine is authoritative. Version 1 replicates gameplay-visible state and
+  events but does not promise exact authority-process migration of contact
+  manifolds, solver warm-start state, or interpolation caches.
+- Semantic inputs describe move, jump, run, drop-through, wall traversal, and
+  drag lifecycle rather than raw macOS key codes or pointer events.
+- JSON fixtures are the first compatibility format. A binary encoding is
+  adopted only after measured payload or encode/decode cost fails an explicit
+  budget, without changing domain meaning.
 
 ## Open Questions
 
 - Should the eventual public identity be DesktopPhysicsKit, DesktopWorldKit, or
   a product name chosen after the second use?
+- Should the shared multiplayer viewport use the selected display's full frame
+  or visible frame, and should focus ever be shared behind a privacy toggle?
+- Should desktop platforms span the full playable depth, occupy a narrow band
+  around `Z = 0`, or recede as part of the flat-to-depth transition?
+- What snapshot cadence, numeric quantization, and asset-distribution policy
+  meet a measured two-player latency and bandwidth budget?
 - Should cursor interaction remain a kinematic collider or become a field/force
   adapter after physical testing?
 - Resolved: the saved-Shortcut path worked but showed macOS Shortcuts status UI
@@ -410,6 +467,8 @@ Resolved during implementation:
 - [Accepted overlay/content boundary](../../decisions/adr/ADR-0001-keep-content-and-product-behavior-outside-the-overlay-host.md)
 - [Proposed reusable-layer boundary](../../decisions/adr/ADR-0002-keep-desktop-physics-reuse-outside-globaloverlaykit.md)
 - [Proposed DesktopSurfaceKit promotion and versioning gates](../../decisions/adr/ADR-0003-promote-desktopsurfacekit-through-versioned-compatibility-gates.md)
+- [Proposed Godot desktop-window observation feed](../../decisions/adr/ADR-0004-bridge-desktopsurfacekit-to-godot-through-a-versioned-snapshot-feed.md)
+- [Proposed portable game-state and engine boundary](../../decisions/adr/ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md)
 - [Prior-art research](../../research/RSCH-0002-desktop-physics-overlay-prior-art.md)
 - [Native input research](../../research/RSCH-0003-global-gameplay-key-input-on-macos.md)
 - [Stick-figure and wall-movement research](../../research/RSCH-0007-procedural-stick-figure-character-animation-and-wall-movement.md)

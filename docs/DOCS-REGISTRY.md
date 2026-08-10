@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-08-11 04:00:59 JST +0900"
+updated_at: "2026-08-11 05:11:23 JST +0900"
 ---
 
 # Docs Registry
@@ -16,6 +16,7 @@ updated_at: "2026-08-11 04:00:59 JST +0900"
 | ADR-0002 | adr | Keep Desktop Physics Reuse Outside GlobalOverlayKit | accepted | `decisions/adr/ADR-0002-keep-desktop-physics-reuse-outside-globaloverlaykit.md` |
 | ADR-0003 | adr | Stage DesktopSurfaceKit Promotion Through Versioned Compatibility Gates | proposed | `decisions/adr/ADR-0003-promote-desktopsurfacekit-through-versioned-compatibility-gates.md` |
 | ADR-0004 | adr | Bridge DesktopSurfaceKit to Godot Through a Versioned Snapshot Feed | proposed | `decisions/adr/ADR-0004-bridge-desktopsurfacekit-to-godot-through-a-versioned-snapshot-feed.md` |
+| ADR-0005 | adr | Separate Portable Game State From Observation And Engine Runtime | proposed | `decisions/adr/ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md` |
 | AREA-DESKTOP-PHYSICS | architecture-area | Desktop Physics Adapter | active | `architecture/areas/AREA-DESKTOP-PHYSICS.md` |
 | AREA-EXAMPLE | architecture-area | Example | draft | `architecture/areas/AREA-EXAMPLE.md` |
 | AREA-OVERLAY-HOST | architecture-area | Overlay Host | active | `architecture/areas/AREA-OVERLAY-HOST.md` |

@@ -487,3 +487,40 @@ and recommendation are preserved in
 - Keep built-in tilt out of the product until the `RSCH-0009` reopen condition
   is satisfied; prefer an iPhone Core Motion or public controller provider if
   supported tilt input becomes a separate priority.
+
+## 2026-08-11 Portable Game-State Architecture Checkpoint
+
+Owen confirmed that the desktop game must remain portable to a possible Godot
+runtime and that the gameplay-visible world should be easy to encode for a
+future multiplayer experience without sending screen contents. He also
+required painted-pixel avatar interaction to remain distinct from the physics
+collider and portable across engines.
+
+The accumulated demo was first checkpointed as `efaf82d` after the full
+`./run check` passed. Three parallel read-only audits then reviewed portable
+state, interaction policy, and DesktopSurfaceKit observation. The allocation
+and audit results converged on these proposed decisions:
+
+- add one pure nested `DesktopGameCore` target for portable values and small
+  deterministic gameplay policies;
+- preserve four ownership categories: local macOS observation, canonical game
+  state, engine-private solver state, and renderer-only state;
+- use one authoritative simulation with snapshot/event replication rather than
+  requiring SpriteKit and Godot solver determinism;
+- define the canonical world as right-handed X/Y/Z from version 1: X right, Y
+  up, positive Z toward the viewer, negative Z into the world, and today's
+  collapsed desktop on `Z = 0`;
+- send asset, animation-frame, transform, and pick-mask references rather than
+  pixels; each engine samples a local immutable mask for pointer selection;
+- identify wall contact by one collision feature so toward-wall Jump can phase
+  through only that feature until the player fully crosses it;
+- keep `desktop-window-feed` separate from the privacy-filtered
+  `desktop-game-state` protocol;
+- keep ordinary DesktopSurfaceKit geometry permission-free and add focus only
+  as a separate, nonprompting Accessibility-backed product.
+
+The durable decision and schema sketch are in
+[ADR-0005](../../decisions/adr/ADR-0005-separate-portable-game-state-from-observation-and-engine-runtime.md).
+It remains proposed until the pure target and a real Godot fixture consumer
+validate the contract. Do not add another SpriteKit-only gameplay feature
+before that boundary exists.

@@ -4,17 +4,17 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-11 01:22:00 JST +0900"
+updated_at: "2026-08-11 04:57:05 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST, AREA-DESKTOP-PHYSICS]
 related_specs: [SPEC-0001, SPEC-0002]
 related_plans: [PLAN-0001, PLAN-0002, PLAN-0003]
-related_adrs: [ADR-0001, ADR-0002]
+related_adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005]
 related_sessions:
   - 2026-08-09-project-foundation-and-overlay-boundary
 repo_state:
-  based_on_commit:
-  last_reviewed_commit:
+  based_on_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
+  last_reviewed_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
 ---
 
 # Current State
@@ -161,11 +161,18 @@ Mac.
   fades an opaque white SpriteKit backdrop together with black enabled-edge
   presentation; Reduce Motion applies the same end state atomically. These
   mechanics and transition feel still require installed physical acceptance.
-- Godot reuse is specified through proposed ADR-0004 and EXPL-0002. The chosen
-  first seam is a signed Swift helper plus versioned NDJSON snapshot feed, not
-  shared SpriteKit code. A local Godot pipe probe passed, but the current 2x
-  Retina mismatch blocks collider-ready implementation until display mapping
-  and signed helper export are proven.
+- Godot reuse now has two separately versioned proposed seams. ADR-0004's
+  `desktop-window-feed` supplies local macOS observation to a future Godot
+  authority. ADR-0005's `desktop-game-state` supplies privacy-filtered
+  surfaces, entities, assets, and events to replicas. The pure
+  `DesktopGameCore` target and Godot fixture consumer are not implemented yet.
+  Its proposed version-1 state is right-handed X/Y/Z with the collapsed desktop
+  on `Z = 0`; SpriteKit remains the first planar authority. A local Godot pipe probe passed, but
+  the current 2x Retina mismatch still blocks collider-ready window-feed work.
+- DesktopSurfaceKit geometry itself is permission-free. The current consumer's
+  Accessibility trust guard around geometry is an ownership bug to remove;
+  global keyboard capture and the proposed optional focus observer retain
+  their separate Accessibility behavior.
 - Screen-filling configuration is a frame snapshot. The caller still owns
   reacting to display attachment, removal, rotation, or resolution changes.
 - There is no multi-overlay coordinator, general keyboard remapper, custom

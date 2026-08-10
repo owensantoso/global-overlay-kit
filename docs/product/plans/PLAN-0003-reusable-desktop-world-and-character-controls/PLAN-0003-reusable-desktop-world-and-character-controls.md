@@ -5,7 +5,7 @@ title: Reusable Desktop World And Character Controls
 domain: product
 status: in_progress
 created_at: "2026-08-10 00:17:57 JST +0900"
-updated_at: "2026-08-10 21:15:24 JST +0900"
+updated_at: "2026-08-11 04:57:05 JST +0900"
 owner:
 sequence:
   roadmap: "3.0"
@@ -16,7 +16,7 @@ sequence:
 areas: [AREA-DESKTOP-PHYSICS, AREA-OVERLAY-HOST]
 related_specs:
   - SPEC-0002
-related_adrs: [ADR-0001, ADR-0002]
+related_adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005]
 related_sessions:
   - 2026-08-10-reusable-desktop-world-and-controls
 related_issues: []
@@ -25,8 +25,8 @@ linked_paths:
   - Examples/DesktopPhysicsDemo
   - run
 repo_state:
-  based_on_commit: 102cac2110afa282633706e80a33c3a60265cc25
-  last_reviewed_commit: 102cac2110afa282633706e80a33c3a60265cc25
+  based_on_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
+  last_reviewed_commit: efaf82d290a31a5cab0142cf1a1afa50112d89b9
 ---
 
 # PLAN-0003 - Reusable Desktop World And Character Controls
@@ -41,8 +41,12 @@ product boundary.
 ## Architecture
 
 - SpriteKit remains the actual engine.
+- A proposed pure `DesktopGameCore` target owns portable state, semantic
+  inputs/events, stable session identities, and deterministic gameplay
+  policies. It imports no Apple UI/graphics framework and no game engine.
 - A `DesktopPhysicsKit` library target owns the overlay/scene integration,
-  desktop objects, cursor collider, player, and control-mode lifecycle.
+  SpriteKit authority, desktop objects, cursor collider, player runtime, and
+  control-mode lifecycle.
 - `DesktopPhysicsDemo` becomes a thin SwiftUI caller of that library.
 - The target remains inside the nested example package for this milestone so
   extraction stays reversible while the API is still being learned.
@@ -51,6 +55,8 @@ product boundary.
 - App Intents and Shortcuts integration stays in the demo executable and calls
   the existing `DesktopPhysicsWorld` command surface.
 - Prior-art and native-input research are gates, not post-hoc justification.
+- DesktopSurfaceKit's local `desktop-window-feed` and the multiplayer
+  `desktop-game-state` protocol remain independently versioned seams.
 
 ## Task Dependencies / Parallelization
 
@@ -171,6 +177,29 @@ product boundary.
   Hardware presence is confirmed, but public supported MacBook chassis motion
   is not.
 
+### Task 9: Extract Portable State And Engine-Neutral Rules
+
+- Add a nested pure `DesktopGameCore` target before implementing further
+  SpriteKit-only mechanics.
+- Move portable identities, coordinates, game-state values, semantic inputs,
+  events, controller policy, draggable selection, and wall traversal into the
+  target without importing AppKit, Core Graphics, SpriteKit, or Godot.
+- Model position, orientation, linear velocity, angular velocity, surfaces, and
+  viewport depth in X/Y/Z from version 1. Keep the current desktop on `Z = 0`,
+  preserve observation order separately as `desktopLayerRank`, and make the
+  SpriteKit adapter reject unsupported nonplanar authority state.
+- Keep physics bodies, contacts, velocity mutation, alpha-mask decoding/cache,
+  pointer capture, animation textures, and interpolation in engine adapters.
+- Define version-1 snapshot/delta fixtures and privacy assertions. Keep local
+  application/window metadata out of remote state by default.
+- Make SpriteKit the first authority and prove a Godot fixture consumer before
+  extracting the target into another repository.
+- Implement painted-pixel player selection through a current-frame mask and
+  implement feature-scoped wall traversal only after the pure seams exist.
+- Remove the Accessibility trust gate from permission-free window geometry.
+  Add focused-window observation only through a separately approved optional
+  DesktopSurfaceKit product and release candidate.
+
 ## Validation
 
 ```bash
@@ -193,6 +222,14 @@ minimize/close changes must track within the 500 ms refresh. Disabling only the
 outline toggle must remove the visuals immediately while collisions continue;
 disabling window platforms must remove both visuals and collisions. Desktop
 clicks must continue to pass through while object-drag mode is off.
+
+Portable-state validation additionally requires golden Swift/Godot fixtures,
+snapshot/delta loss and recovery cases, privacy-safe default packets,
+coordinate conversion fixtures, and matching opaque/transparent asset points.
+Cross-engine acceptance compares semantic surfaces, entity poses, animation,
+and events rather than identical physics trajectories. A depth-moving fixture
+must be accepted by Godot and explicitly rejected by the planar SpriteKit
+adapter.
 
 ## Completion Criteria
 
@@ -217,6 +254,9 @@ clicks must continue to pass through while object-drag mode is off.
   policy/lifecycle tests, outline lifecycle/nonphysics tests, and signed-app
   physical behavior are recorded separately before the feature is called
   accepted.
+- A peer can reconstruct one fixture world from `desktop-game-state` without
+  receiving screen pixels, local app/window identity metadata, or engine
+  objects.
 
 ## Physical Acceptance Receipt
 
