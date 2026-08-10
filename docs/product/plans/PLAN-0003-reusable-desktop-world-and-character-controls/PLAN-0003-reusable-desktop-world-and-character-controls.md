@@ -198,7 +198,8 @@ Execution brief:
 - Make SpriteKit the first authority and prove a Godot fixture consumer before
   extracting the target into another repository.
 - Implement painted-pixel player selection through a current-frame mask and
-  implement feature-scoped wall traversal only after the pure seams exist.
+  implement coincident-plane-scoped wall traversal only after the pure seams
+  exist.
 - Remove the Accessibility trust gate from permission-free window geometry.
   Add focused-window observation only through a separately approved optional
   DesktopSurfaceKit product and release candidate.

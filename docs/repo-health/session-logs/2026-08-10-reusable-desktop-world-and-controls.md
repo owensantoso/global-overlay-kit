@@ -4,7 +4,7 @@ title: Reusable Desktop World And Controls
 domain: repo-health
 status: in_progress
 created_at: "2026-08-10 00:18:00 JST +0900"
-updated_at: "2026-08-11 04:35:00 JST +0900"
+updated_at: "2026-08-11 06:22:00 JST +0900"
 started_at: "2026-08-10 00:10:00 JST +0900"
 ended_at:
 timezone: "JST +0900"
@@ -512,8 +512,9 @@ and audit results converged on these proposed decisions:
   collapsed desktop on `Z = 0`;
 - send asset, animation-frame, transform, and pick-mask references rather than
   pixels; each engine samples a local immutable mask for pointer selection;
-- identify wall contact by one collision feature so toward-wall Jump can phase
-  through only that feature until the player fully crosses it;
+- identify wall contact by its physical plane and player-relative direction so
+  toward-wall Jump can phase through all coincident source features until the
+  player fully crosses it;
 - keep `desktop-window-feed` separate from the privacy-filtered
   `desktop-game-state` protocol;
 - keep ordinary DesktopSurfaceKit geometry permission-free and add focus only
@@ -524,3 +525,103 @@ The durable decision and schema sketch are in
 It remains proposed until the pure target and a real Godot fixture consumer
 validate the contract. Do not add another SpriteKit-only gameplay feature
 before that boundary exists.
+
+## 2026-08-11 Portable Game Core Implementation
+
+The first bounded `DesktopGameCore` slice is implemented inside the nested
+Desktop Physics package without changing existing SpriteKit or demo-app source.
+The new Foundation-only product provides validated X/Y/Z vectors, normalized
+quaternions, poses and kinematics, viewport/depth and extruded-surface values,
+privacy-filtered snapshots, delta/input/event envelopes, explicit protocol and
+schema versions, and atomic world-session/base-sequence application.
+
+The same pure target now owns two engine-independent interaction policies:
+front-to-back selection over caller-reported painted coverage, and symmetric
+wall traversal scoped to a contacted physical plane within an explicit finite
+tolerance until the previous-frame player bounds fully cross it. The initial
+direction selects traversal and later determines full-bounds clearance, but an
+active phase ignores the relative-direction flip after center crossing. All
+coincident source features are excluded during that phase, while distinct
+planes remain collidable. It does not decode alpha masks or mutate a physics
+body.
+
+The test-first compile failed as expected before the source values existed.
+After all review corrections, 32 focused core tests pass. They cover explicit
+bottom-left/world-unit viewport wire semantics and top-left conversion,
+authority-side despawn-and-never-reuse identity history, duplicate/conflicting
+delta construction and decoding, duplicate/reordered admission, optional
+unknown JSON fields, atomic replica application, and coincident-plane wall
+traversal. The complete nested package passes 33 XCTest tests plus 44 Swift
+Testing tests. The frozen JSON fixtures include one planar desktop, one
+coordinate-conversion case, and one avatar moving into negative Z with X-axis
+rotation. The planar capability admits the planar state and rejects the depth
+state.
+
+This is automated contract evidence only. The current SpriteKit scene does not
+yet emit or consume these values, Godot has not decoded the fixtures, and no
+multiplayer transport or physical gameplay behavior changed in this slice.
+
+### Spec-review correction
+
+- What happened: the first pass described coordinate semantics and entity ID
+  nonreuse in prose, accepted ambiguous delta arrays, and scoped wall traversal
+  to one source feature ID.
+- What led to it: passive value containers and comments were treated as if
+  they enforced the reusable protocol invariants.
+- Source: implementation assumption exposed by spec review.
+- What changed: coordinate origin/units are required wire enums with a
+  conversion fixture; a per-session authority ledger retires despawned entity
+  IDs; delta initialization and decoding reject duplicate/conflicting IDs; and
+  traversal excludes all features coincident with the contacted plane and
+  direction within a finite encoded tolerance.
+- Verification: focused tests exercise each corrected invariant, including
+  malformed JSON at the decode boundary. The final `./run check` passed all
+  root and nested tests, the signed Debug app build, generated-doc checks, link
+checks, continuity smoke, and diff hygiene.
+
+### Code-review correction
+
+- What happened: active wall exclusion stopped after the player center crossed
+  because the candidate-relative direction flipped, and replica admission
+  advanced sequence state before caller application could succeed. Planar
+  tolerance, equal painted ranks, quaternion sign, and ledger copy/concurrency
+  behavior were also ambiguous.
+- What led to it: the first state machines modeled the contact sample and
+  admission decision as completed state rather than separating the active
+  phase from transient observations and validation from application.
+- Source: implementation assumption exposed by code review.
+- What changed: active traversal matches the stored plane regardless of current
+  relative direction until previous-frame full bounds clear; an exclusive
+  replica coordinator validates, synchronously applies, and commits each state
+  update as one operation;
+  stale ticks and unsafe planar tolerances fail closed; equal painted ranks use
+  UTF-8 entity-ID order; quaternion signs canonicalize; and the entity ledger
+  is one `NSLock`-guarded reference shared by aliases.
+- Verification: 31 focused core tests and the complete nested package pass,
+  including straddling-after-center-cross, throwing application recovery,
+  stale tick,
+  rank-order independence, quaternion equivalence, and concurrent ledger
+  fixtures. The final `./run check` also passes the root and nested suites,
+  signed Debug app build, generated docs, link checks, continuity smoke, and
+  diff hygiene.
+
+### Atomic replica-application correction
+
+- What happened: the two-phase admission token prevented premature sequence
+  advancement but still let a caller apply an older payload externally before
+  learning that its token had lost a race to a newer commit.
+- What led to it: validation and commit were protected, but payload application
+  remained caller-controlled between them.
+- Source: state-ownership mistake exposed by re-review.
+- What changed: the public token flow was removed. One locked replica
+  coordinator now validates, runs a nonescaping synchronous throwing
+  application closure, and advances session/sequence/tick under the same
+  exclusive lock. Rejected updates never invoke the closure, and a throwing
+  closure never advances the coordinator. The closure must not re-enter that
+  coordinator while it owns the exclusive operation.
+- Verification: a deterministic competing-update test blocks a newer
+  application while an older base-sequence update queues, then proves only the
+  newer payload runs and the older closure is never invoked. All 32 focused
+  core tests pass. `./run docs && ./run check` passes the 33 XCTest tests, 44
+  Swift Testing tests, signed Debug app build, generated documentation, link
+  checks, continuity smoke, and diff hygiene.

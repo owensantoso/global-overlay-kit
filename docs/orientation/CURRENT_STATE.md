@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-08-09 03:50:00 JST +0900"
-updated_at: "2026-08-11 04:57:05 JST +0900"
+updated_at: "2026-08-11 06:22:00 JST +0900"
 owner:
 areas: [AREA-OVERLAY-HOST, AREA-DESKTOP-PHYSICS]
 related_specs: [SPEC-0001, SPEC-0002]
@@ -164,9 +164,20 @@ Mac.
 - Godot reuse now has two separately versioned proposed seams. ADR-0004's
   `desktop-window-feed` supplies local macOS observation to a future Godot
   authority. ADR-0005's `desktop-game-state` supplies privacy-filtered
-  surfaces, entities, assets, and events to replicas. The pure
-  `DesktopGameCore` target and Godot fixture consumer are not implemented yet.
-  Its proposed version-1 state is right-handed X/Y/Z with the collapsed desktop
+  surfaces, entities, assets, and events to replicas. The pure nested
+  `DesktopGameCore` target is now implemented with validated Foundation-only
+  values, frozen planar/depth JSON fixtures, base-sequence recovery, a planar
+  capability gate, deterministic painted-candidate selection, canonical
+  quaternion signs, an exclusive replica coordinator that validates, applies,
+  and commits synchronously with stale-tick rejection, atomic authority-side
+  entity-ID retirement, and
+  coincident-plane-scoped wall traversal through full-bounds clearance.
+  Version-1 viewport
+  JSON fixes the origin at the bottom-left of the screen plane and the units as
+  world units; a fixture proves conversion from top-left observation space.
+  Deltas reject duplicate and conflicting identity operations at construction
+  and decode. The Godot fixture consumer and SpriteKit state adapter are not
+  implemented yet. Version-1 state is right-handed X/Y/Z with the collapsed desktop
   on `Z = 0`; SpriteKit remains the first planar authority. A local Godot pipe probe passed, but
   the current 2x Retina mismatch still blocks collider-ready window-feed work.
 - DesktopSurfaceKit geometry itself is permission-free. The current consumer's

@@ -279,6 +279,11 @@ state.
   one exact base sequence; missing or reordered bases require a full snapshot.
 - Tick orders simulation. Sequence orders transmitted state. A replica may
   interpolate but cannot silently become authoritative.
+- A replica applies state through one exclusive coordinator operation. Under
+  the same lock it validates the session, base sequence, sequence, and tick;
+  invokes one nonescaping synchronous throwing payload-application closure;
+  then commits the new session, sequence, and tick. A rejected envelope never
+  invokes the closure, and a thrown application never advances sequencing.
 
 ## Interaction Seams
 
@@ -291,11 +296,16 @@ contracts.
   reports painted coverage to a pure front-to-back selection policy.
 - Physics geometry never decides whether a pointer captures the avatar.
 
-Wall traversal is likewise a pure state machine over a contacted feature ID,
+Wall traversal is likewise a pure state machine over contacted feature IDs,
 wall direction, and plane. Toward-wall plus a fresh Jump begins exclusion of
-only that feature until the player fully crosses it. Away-wall or neutral plus
-Jump remains an outward wall jump. SpriteKit owns velocity/body mutation and
-live collision probing.
+every feature coincident with that contacted plane within one explicit finite
+tolerance. During active traversal, exclusion is independent of the feature's
+current player-relative direction because that direction flips when the
+player's center crosses the plane. The initial direction is retained only to
+decide when the previous-frame player bounds have fully cleared the plane.
+Distinct planes remain collidable. Away-wall or neutral plus Jump remains an
+outward wall jump. SpriteKit owns velocity/body mutation and live collision
+probing.
 
 The first wall-phase implementation covers visible window edges only. Screen
 and loose-object walls remain unphaseable until their collision features have

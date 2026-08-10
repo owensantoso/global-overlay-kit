@@ -1,0 +1,5 @@
+{
+  "expected_world": {"x": 20, "y": 1129, "z": -2},
+  "source_screen_plane_top_left": {"x": 20, "y": 40, "z": -2},
+  "viewport_height": 1169
+}

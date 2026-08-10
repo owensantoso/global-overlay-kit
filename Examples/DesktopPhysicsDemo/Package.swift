@@ -9,6 +9,10 @@ let package = Package(
     ],
     products: [
         .library(
+            name: "DesktopGameCore",
+            targets: ["DesktopGameCore"]
+        ),
+        .library(
             name: "DesktopPhysicsKit",
             targets: ["DesktopPhysicsKit"]
         ),
@@ -25,6 +29,7 @@ let package = Package(
         )
     ],
     targets: [
+        .target(name: "DesktopGameCore"),
         .target(
             name: "MacDesktopWindowGeometry",
             dependencies: [
@@ -61,6 +66,11 @@ let package = Package(
                 "DesktopPhysicsKit",
                 "MacDesktopWindowGeometry"
             ]
+        ),
+        .testTarget(
+            name: "DesktopGameCoreTests",
+            dependencies: ["DesktopGameCore"],
+            resources: [.process("Fixtures")]
         )
     ]
 )
