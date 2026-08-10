@@ -13,7 +13,7 @@ deciders:
 related_specs:
   - SPEC-0002
 related_plans: [PLAN-0003]
-related_briefs: []
+related_briefs: [IMPL-0003-02]
 related_sessions:
   - 2026-08-10-reusable-desktop-world-and-controls
 related_issues: []

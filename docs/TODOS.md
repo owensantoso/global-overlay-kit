@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-08-11 05:11:23 JST +0900"
+updated_at: "2026-08-11 05:15:38 JST +0900"
 ---
 
 # Docs Todos
@@ -55,3 +55,9 @@ No structured `TODO-*` items found.
 | open | IMPL-0001-01 | 147 | Parent plan and current-state closeout are synchronized. |
 | open | IMPL-0003-01 | 60 | Verification complete |
 | open | IMPL-0003-01 | 62 | Physical recovery and Command-Tab verified |
+| open | IMPL-0003-02 | 63 | Pure product and target compile |
+| open | IMPL-0003-02 | 65 | Golden state fixtures pass |
+| open | IMPL-0003-02 | 66 | Planar/nonplanar capability checks pass |
+| open | IMPL-0003-02 | 67 | Drag and wall policies pass |
+| open | IMPL-0003-02 | 68 | Full repository check passes |
+| open | IMPL-0003-02 | 69 | Paper trail reflects exact implemented versus deferred scope |

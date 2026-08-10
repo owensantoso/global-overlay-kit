@@ -179,6 +179,9 @@ product boundary.
 
 ### Task 9: Extract Portable State And Engine-Neutral Rules
 
+Execution brief:
+[IMPL-0003-02](IMPL-0003-02-add-portable-3d-game-core.md).
+
 - Add a nested pure `DesktopGameCore` target before implementing further
   SpriteKit-only mechanics.
 - Move portable identities, coordinates, game-state values, semantic inputs,
