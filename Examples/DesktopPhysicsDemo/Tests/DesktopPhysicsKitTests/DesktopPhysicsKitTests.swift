@@ -4,7 +4,10 @@ import DesktopGameCore
 import SpriteKit
 import XCTest
 @testable import DesktopPhysicsKit
+@testable import MacDesktopWindowFocusAdapter
 @testable import MacDesktopWindowGeometry
+import MacDesktopWindowFocusObservation
+import MacDesktopWindowObservation
 
 private final class TestMonotonicClock: @unchecked Sendable {
     private let lock = NSLock()
@@ -696,6 +699,58 @@ final class DesktopPhysicsKitTests: XCTestCase {
         let window = try XCTUnwrap(snapshot.windows.first)
         XCTAssertEqual(window.sourceWindowID, 77)
         XCTAssertEqual(window.frame, CGRect(x: 100, y: 550, width: 300, height: 150))
+    }
+
+    func testWindowFocusAdapterClearsEveryNonFocusedOutcome() {
+        XCTAssertEqual(
+            MacDesktopWindowFocusProvider.sourceWindowID(
+                from: .focused(MacDesktopWindowID(rawValue: 77))
+            ),
+            77
+        )
+
+        let cleared: [MacDesktopFocusedWindowObservation] = [
+            .noFocusedWindow,
+            .notRepresented,
+            .ambiguous,
+            .unavailable(.windowSnapshotUnavailable),
+            .unavailable(.accessibilityPermissionRequired),
+            .unavailable(.accessibilityUnavailable),
+            .unavailable(.invalidResponse)
+        ]
+        for observation in cleared {
+            XCTAssertNil(MacDesktopWindowFocusProvider.sourceWindowID(from: observation))
+        }
+    }
+
+    @MainActor
+    func testFocusPermissionFailureDoesNotDisableOrdinaryWindowGeometry() throws {
+        let geometry = MacDesktopWindowGeometryProvider(
+            minimumWindowDimension: 50,
+            observation: { _ in
+                .available([
+                    MacDesktopWindowGeometryObservationEntry(
+                        id: 77,
+                        processID: 42,
+                        applicationName: "Example",
+                        frame: CGRect(x: 100, y: 200, width: 300, height: 250),
+                        zIndex: 0
+                    )
+                ])
+            },
+            mainDisplayHeight: { 1_000 }
+        )
+        let focus = MacDesktopWindowFocusProvider { _ in
+            .unavailable(.accessibilityPermissionRequired)
+        }
+
+        let geometrySnapshot = geometry.snapshot(
+            selectedScreenFrame: CGRect(x: 0, y: 0, width: 800, height: 700)
+        )
+
+        XCTAssertEqual(geometrySnapshot.availability, .available)
+        XCTAssertEqual(geometrySnapshot.windows.map(\.sourceWindowID), [77])
+        XCTAssertNil(focus.focusedSourceWindowID())
     }
 
     func testOcclusionFragmentsRetainOnlyOriginalWindowSides() {

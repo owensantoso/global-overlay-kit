@@ -19,13 +19,17 @@ let package = Package(
         .library(
             name: "MacDesktopWindowGeometry",
             targets: ["MacDesktopWindowGeometry"]
+        ),
+        .library(
+            name: "MacDesktopWindowFocusAdapter",
+            targets: ["MacDesktopWindowFocusAdapter"]
         )
     ],
     dependencies: [
         .package(path: "../.."),
         .package(
             url: "https://github.com/owensantoso/DesktopSurfaceKit.git",
-            exact: "0.1.0-rc.3"
+            exact: "0.2.0-rc.1"
         )
     ],
     targets: [
@@ -47,6 +51,15 @@ let package = Package(
             ]
         ),
         .target(
+            name: "MacDesktopWindowFocusAdapter",
+            dependencies: [
+                .product(
+                    name: "MacDesktopWindowFocusObservation",
+                    package: "DesktopSurfaceKit"
+                )
+            ]
+        ),
+        .target(
             name: "DesktopPhysicsKit",
             dependencies: [
                 "DesktopGameCore",
@@ -65,7 +78,8 @@ let package = Package(
             dependencies: [
                 "DesktopGameCore",
                 "DesktopPhysicsKit",
-                "MacDesktopWindowGeometry"
+                "MacDesktopWindowGeometry",
+                "MacDesktopWindowFocusAdapter"
             ]
         ),
         .testTarget(

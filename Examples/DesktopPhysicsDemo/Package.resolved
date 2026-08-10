@@ -1,13 +1,13 @@
 {
-  "originHash" : "d82ad87d9c20e5c5bd857d0a5ca693b156196482fe06efab52ed2703844b7bfe",
+  "originHash" : "7114de85fa8a6daa69315fee1f56bcdc975ddd4bb3a5723aee714ab607b4f47f",
   "pins" : [
     {
       "identity" : "desktopsurfacekit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/owensantoso/DesktopSurfaceKit.git",
       "state" : {
-        "revision" : "ebc8d34eedd4ad395e488e153d6a6ca83b155095",
-        "version" : "0.1.0-rc.3"
+        "revision" : "f39b56e6d7b47c44a980373e96a6071836044489",
+        "version" : "0.2.0-rc.1"
       }
     }
   ],

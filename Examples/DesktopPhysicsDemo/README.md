@@ -40,13 +40,12 @@ the player again.
 The optional **Use app windows as platforms** mode is backed by canonical
 `DesktopSurfaceKit` window observation plus the narrow
 `MacDesktopWindowGeometry` product adapter. Core Graphics supplies stable-
-enough window IDs and frames; Accessibility is an explicit product fail-off
-gate shared with the global-control permission flow. Loose objects collide
-with each remaining visible rectangle. The player ignores those bodies and can
-land from above on a visible original top or bottom edge while still jumping
-through either edge from below. A separate switch makes only visible original
-left/right edges into two-sided player walls. Occlusion-cut edges never become
-player surfaces, and moving geometry cannot squish the character.
+enough window IDs and frames without Accessibility permission. Loose objects
+collide with each remaining visible rectangle. The player ignores those bodies
+and can land from above on a visible original top or bottom edge while still
+jumping through either edge from below. A separate switch makes only visible
+original left/right edges into two-sided player walls. Occlusion-cut edges never
+become player surfaces, and moving geometry cannot squish the character.
 
 For this testing build, **Show platform outlines** starts on. Each cyan outline
 is a visible rectangle used for loose-object collision; thicker capped yellow
@@ -70,8 +69,13 @@ window-observation contract now lives in the canonical version-controlled
 specific permission, coordinate, and physics policy. See
 [RSCH-0008](../../docs/research/RSCH-0008-macos-window-geometry-reuse-readiness.md).
 
-The consumer pins private `DesktopSurfaceKit` `0.1.0-rc.3`. Its rectangular
-front-to-back subtraction removes fully covered window regions. Cyan outlines
+The consumer pins private `DesktopSurfaceKit` `0.2.0-rc.1`. The separately
+imported `MacDesktopWindowFocusAdapter` performs a synchronous nonprompting
+focus query and maps only an exact represented focus to the existing source
+window ID; every other result clears focus while ordinary geometry remains
+available. Desktop Physics does not yet poll that adapter or assign gameplay
+meaning to focus. Its rectangular front-to-back subtraction removes fully
+covered window regions. Cyan outlines
 show the remaining object colliders; yellow lines show only genuinely visible
 source-window top and bottom edges used as one-way landing platforms by the
 character. Each fragment now carries its source window, compact front-to-back
