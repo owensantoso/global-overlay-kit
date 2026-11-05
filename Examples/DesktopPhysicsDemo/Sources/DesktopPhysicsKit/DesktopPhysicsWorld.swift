@@ -60,6 +60,11 @@ public final class DesktopPhysicsWorld {
     public var hasPlayer: Bool { sceneController.scene.hasPlayer }
     public var phoneSnapshot: DesktopPhoneSnapshot { sceneController.scene.phoneSnapshot }
     public var phoneRegion: CGRect? { sceneController.scene.phoneRegion }
+    public var phoneScreens: [DesktopPhoneScreen] { sceneController.scene.phoneScreens }
+
+    public func setPhoneScreens(_ screens: [DesktopPhoneScreen]) {
+        sceneController.scene.setPhoneScreens(screens)
+    }
 
     public func setPhoneRegion(_ region: CGRect?) {
         sceneController.scene.setPhoneRegion(region)
@@ -70,7 +75,7 @@ public final class DesktopPhysicsWorld {
     }
 
     public func setPhoneInput(_ input: DesktopPhoneInput) {
-        guard phoneRegion != nil else { return }
+        guard !phoneScreens.isEmpty else { return }
         keyController.state.setPhoneInput(input)
     }
 

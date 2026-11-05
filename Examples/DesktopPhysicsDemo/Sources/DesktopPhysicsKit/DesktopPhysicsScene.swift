@@ -57,7 +57,8 @@ final class DesktopPhysicsScene: SKScene {
     private var playerBoundaryNode: SKNode?
     private var playerNode: SKNode?
     private var playerID: String?
-    private(set) var phoneRegion: CGRect?
+    private(set) var phoneScreens: [DesktopPhoneScreen] = []
+    var phoneRegion: CGRect? { phoneScreens.first?.rect }
     private var phoneSeamNode: SKNode?
     private var phonePlatforms: [DesktopPhonePlatformSnapshot] = []
     private var phonePlatformNode: SKNode?
@@ -200,11 +201,7 @@ final class DesktopPhysicsScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
         gameWorldBackdrop.size = size
-        if let phoneRegion, DesktopPhoneGeometry(macSize: size, phone: phoneRegion) == nil {
-            setPhoneRegion(nil)
-        } else {
-            installBoundary()
-        }
+        setPhoneScreens(phoneScreens, forceRebuild: true)
     }
 
     var phoneSnapshot: DesktopPhoneSnapshot {
@@ -224,50 +221,57 @@ final class DesktopPhysicsScene: SKScene {
         } else {
             player = nil
         }
-        return DesktopPhoneSnapshot(width: size.width, height: size.height, player: player, platforms: phonePlatforms)
+        let topology = DesktopPhoneTopology(macSize: size, screens: phoneScreens)
+        return DesktopPhoneSnapshot(
+            width: size.width, height: size.height, player: player, platforms: phonePlatforms,
+            screens: phoneScreens, seams: topology.seams
+        )
     }
 
     func setPhoneRegion(_ region: CGRect?) {
-        let valid = region.flatMap { DesktopPhoneGeometry(macSize: size, phone: $0)?.phone }
-        guard valid != phoneRegion else { return }
-        // Keep continuous state when the new union still contains the whole character.
+        setPhoneScreens(region.map { [DesktopPhoneScreen(id: "phone", rect: $0)] } ?? [])
+    }
+
+    func setPhoneScreens(_ screens: [DesktopPhoneScreen], forceRebuild: Bool = false) {
+        let topology = DesktopPhoneTopology(macSize: size, screens: screens)
+        guard forceRebuild || topology.screens != phoneScreens else { return }
+        var shouldRescue = false
         if let playerNode {
             let bodyBounds = CGRect(
                 x: playerNode.position.x - playerHalfWidth,
                 y: playerNode.position.y - playerHalfHeight,
                 width: playerHalfWidth * 2, height: playerHalfHeight * 2
             )
-            let mac = CGRect(origin: .zero, size: size)
-            let corners = [
-                CGPoint(x: bodyBounds.minX, y: bodyBounds.minY),
-                CGPoint(x: bodyBounds.maxX, y: bodyBounds.minY),
-                CGPoint(x: bodyBounds.minX, y: bodyBounds.maxY),
-                CGPoint(x: bodyBounds.maxX, y: bodyBounds.maxY)
-            ]
-            func containsIncludingEdges(_ rect: CGRect, _ point: CGPoint) -> Bool {
-                point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY
-            }
-            let stillVisible = corners.allSatisfy { point in
-                containsIncludingEdges(mac, point) || valid.map { containsIncludingEdges($0, point) } == true
-            }
-            if !stillVisible { returnPhonePlayerToMac() }
+            shouldRescue = !topology.contains(bodyBounds)
         }
-        phoneRegion = valid
+        phoneScreens = topology.screens
         inputState.setPhoneInput(.released)
         installBoundary()
+        if shouldRescue { returnPhonePlayerToMac() }
     }
 
     func returnPhonePlayerToMac() {
         guard let playerNode else { return }
         endObjectDrag(timestamp: inputState.currentMonotonicTime(), applyingThrow: false)
         var entryX = min(max(playerNode.position.x, playerHalfWidth + 8), max(playerHalfWidth + 8, size.width - playerHalfWidth - 8))
-        if let phoneRegion, phoneRegion.maxY == 0 {
-            if phoneRegion.minX >= playerHalfWidth * 2 + 16 {
-                entryX = min(entryX, phoneRegion.minX - playerHalfWidth - 8)
-            } else if phoneRegion.maxX <= size.width - playerHalfWidth * 2 - 16 {
-                entryX = max(entryX, phoneRegion.maxX + playerHalfWidth + 8)
-            } else if let lastStep = phonePlatforms.last {
-                entryX = lastStep.x + lastStep.width / 2
+        let topology = DesktopPhoneTopology(macSize: size, screens: phoneScreens)
+        let floorOpenings = topology.connections.filter {
+            ($0.from.id == "mac" || $0.to.id == "mac")
+                && $0.segment.start.y == 0 && $0.segment.end.y == 0
+        }.map(\.segment)
+        if !floorOpenings.isEmpty {
+            let inset = playerHalfWidth + 8
+            let candidates = [entryX, inset, size.width - inset] + floorOpenings.flatMap {
+                [$0.start.x - inset, $0.end.x + inset]
+            }
+            let safe = candidates.filter { x in
+                x >= inset && x <= size.width - inset
+                    && !floorOpenings.contains { x + playerHalfWidth > $0.start.x && x - playerHalfWidth < $0.end.x }
+            }
+            if let nearest = safe.min(by: { abs($0 - entryX) < abs($1 - entryX) }) {
+                entryX = nearest
+            } else if let perch = phonePlatforms.first(where: { abs($0.y) < 0.001 && $0.x >= 0 && $0.x + $0.width <= size.width }) {
+                entryX = perch.x + perch.width / 2
             }
         }
         playerNode.position = CGPoint(x: entryX, y: playerHalfHeight + 8)
@@ -690,7 +694,7 @@ final class DesktopPhysicsScene: SKScene {
         playerControllerProfile.maximumJumpHeight = clamped
         playerControllerProfile.minimumJumpHeight = clamped * tapRatio
         playerControllerProfile.wallJumpVerticalSpeed = playerControllerProfile.jumpVelocity
-        if phoneRegion != nil { installBoundary() }
+        if !phoneScreens.isEmpty { installBoundary() }
     }
 
     private func syncWindowPlatformOutlines() {
@@ -1093,7 +1097,8 @@ final class DesktopPhysicsScene: SKScene {
         phoneSeamNode?.removeFromParent()
         phoneSeamNode = nil
         let playerBoundary: SKPhysicsBody
-        if let phoneRegion, let geometry = DesktopPhoneGeometry(macSize: size, phone: phoneRegion) {
+        let geometry = DesktopPhoneTopology(macSize: size, screens: phoneScreens)
+        if !phoneScreens.isEmpty {
             phonePlatforms = geometry.stairPlatforms(maximumRise: min(80, playerJumpHeight * 0.4))
             let steps = SKNode()
             steps.name = "desktop-phone-steps"
@@ -1115,9 +1120,10 @@ final class DesktopPhysicsScene: SKScene {
             let marker = SKNode()
             marker.name = "desktop-phone-seam"
             marker.zPosition = 100
-            for point in [geometry.seam.start, geometry.seam.end] {
+            for connection in geometry.connections {
+              for point in [connection.segment.start, connection.segment.end] {
                 let cap = CGMutablePath()
-                if geometry.seam.start.x == geometry.seam.end.x {
+                if connection.segment.start.x == connection.segment.end.x {
                     cap.move(to: CGPoint(x: point.x - 9, y: point.y))
                     cap.addLine(to: CGPoint(x: point.x + 9, y: point.y))
                 } else {
@@ -1128,6 +1134,7 @@ final class DesktopPhysicsScene: SKScene {
                 line.lineWidth = 4
                 line.strokeColor = .systemCyan
                 marker.addChild(line)
+              }
             }
             addChild(marker)
             phoneSeamNode = marker

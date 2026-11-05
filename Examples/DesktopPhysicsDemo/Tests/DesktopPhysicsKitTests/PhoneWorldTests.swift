@@ -318,6 +318,85 @@ final class PhoneWorldTests: XCTestCase {
     }
 
     @MainActor
+    func testMiddlePhoneLossRescuesPlayerAndUnchangedConnectedUnionPreservesIt() throws {
+        let scene = makeScene()
+        scene.spawnPlayer()
+        let first = DesktopPhoneScreen(id: "one", rect: CGRect(x: 800, y: 0, width: 300, height: 500))
+        let second = DesktopPhoneScreen(id: "two", rect: CGRect(x: 1_100, y: 0, width: 300, height: 500))
+        scene.setPhoneScreens([second, first])
+        let node = try XCTUnwrap(scene.children.first { $0.name == "desktop-physics-player" })
+        node.position = CGPoint(x: 1_200, y: 100)
+        node.physicsBody?.velocity = CGVector(dx: 200, dy: 30)
+        let id = scene.phoneSnapshot.player?.id
+        let enlarged = DesktopPhoneScreen(id: "two", rect: CGRect(x: 1_100, y: 0, width: 350, height: 500))
+        scene.setPhoneScreens([first, enlarged])
+        XCTAssertEqual(scene.phoneSnapshot.player?.x, 1_200)
+        XCTAssertEqual(scene.phoneSnapshot.player?.vx, 200)
+        XCTAssertEqual(scene.phoneSnapshot.player?.vy, 30)
+        scene.setPhoneScreens([enlarged])
+        XCTAssertTrue(scene.phoneScreens.isEmpty, "Disconnected downstream screens are inactive")
+        XCTAssertTrue(scene.phoneSnapshot.seams.isEmpty)
+        XCTAssertEqual(scene.phoneSnapshot.player?.id, id)
+        XCTAssertLessThan(try XCTUnwrap(scene.phoneSnapshot.player).x, 800)
+        XCTAssertEqual(scene.phoneSnapshot.player?.vx, 0)
+    }
+
+    @MainActor
+    func testElapsedSpriteKitWalksMacPhoneOnePhoneTwoAndBackWithOneIdentity() async throws {
+        let input = DesktopGameInputState()
+        let scene = DesktopPhysicsScene(
+            size: CGSize(width: 800, height: 600),
+            screenFrame: CGRect(x: 0, y: 0, width: 800, height: 600),
+            configuration: .init(), inputState: input
+        )
+        let view = SKView(frame: CGRect(x: 0, y: 0, width: 800, height: 600))
+        let window = NSWindow(contentRect: view.frame, styleMask: .borderless, backing: .buffered, defer: false)
+        window.animationBehavior = .none
+        window.isReleasedWhenClosed = false
+        window.contentView = view
+        window.orderBack(nil)
+        view.presentScene(scene)
+        defer {
+            input.setPhoneInput(.released)
+            view.presentScene(nil)
+            window.contentView = nil
+            window.close()
+        }
+        scene.spawnPlayer()
+        scene.setPhoneScreens([
+            .init(id: "one", rect: CGRect(x: 800, y: 0, width: 300, height: 500)),
+            .init(id: "two", rect: CGRect(x: 1_100, y: 0, width: 300, height: 500))
+        ])
+        scene.setPlayerPositionForTesting(CGPoint(x: 760, y: 100))
+        scene.spawn(.init(shape: .circle, size: .diameter(48)))
+        let ball = try XCTUnwrap(scene.children.first { $0.name == "desktop-physics-object" })
+        ball.position = CGPoint(x: 760, y: 300)
+        ball.physicsBody?.velocity = CGVector(dx: 300, dy: 0)
+        let id = try XCTUnwrap(scene.phoneSnapshot.player?.id)
+        var observed: [String] = ["mac"]
+        for (direction, target) in [(CGFloat(1), CGFloat(1_180)), (-1, 740)] {
+            var reached = false
+            for _ in 0..<160 {
+                input.setPhoneInput(.init(left: direction < 0, right: direction > 0))
+                try await Task.sleep(for: .milliseconds(25))
+                let player = try XCTUnwrap(scene.phoneSnapshot.player)
+                XCTAssertEqual(player.id, id)
+                XCTAssertLessThanOrEqual(ball.position.x, 778, "Loose objects stay on the Mac")
+                let region = player.x < 800 ? "mac" : player.x < 1_100 ? "one" : "two"
+                if observed.last != region { observed.append(region) }
+                if direction > 0 ? player.x > target : player.x < target {
+                    XCTAssertTrue(direction > 0 ? player.vx > 0 : player.vx < 0)
+                    reached = true
+                    break
+                }
+            }
+            XCTAssertTrue(reached, "Could not reach target \(target), player=\(String(describing: scene.phoneSnapshot.player))")
+        }
+        XCTAssertEqual(observed, ["mac", "one", "two", "one", "mac"])
+        XCTAssertEqual(scene.size, CGSize(width: 800, height: 600))
+    }
+
+    @MainActor
     private func makeScene() -> DesktopPhysicsScene {
         DesktopPhysicsScene(
             size: CGSize(width: 800, height: 600),
