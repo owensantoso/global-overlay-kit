@@ -3,13 +3,26 @@ import { parsePhoneState, releasedInput } from "./protocol.ts";
 import type { Input, PhoneState, Viewport } from "./protocol.ts";
 
 type Connection =
-  "connecting" | "online" | "offline" | "invalid" | "occupied" | "paused";
+  | "connecting"
+  | "online"
+  | "offline"
+  | "invalid"
+  | "occupied"
+  | "paused"
+  | "removed";
 
 function session() {
   const fragment = new URLSearchParams(location.hash.slice(1)).get("token");
   let token = fragment && /^[a-f0-9]{32,128}$/i.test(fragment) ? fragment : "";
   let clientID = "";
+  let removed = false;
   try {
+    removed = sessionStorage.getItem("phone-world.removed") === "true";
+    if (fragment && token && removed) {
+      sessionStorage.removeItem("phone-world.clientID");
+      sessionStorage.removeItem("phone-world.removed");
+      removed = false;
+    }
     if (token) sessionStorage.setItem("phone-world.token", token);
     else token = sessionStorage.getItem("phone-world.token") || "";
     clientID = sessionStorage.getItem("phone-world.clientID") || "";
@@ -23,7 +36,7 @@ function session() {
   if (!clientID) clientID = crypto.randomUUID();
   if (location.hash)
     history.replaceState(null, "", location.pathname + location.search);
-  return { token, clientID, sequenceBase: Date.now() * 1000 };
+  return { token, clientID, removed, sequenceBase: Date.now() * 1000 };
 }
 
 export function usePhoneConnection(
@@ -31,11 +44,25 @@ export function usePhoneConnection(
   input: Input,
   clearInput: () => void,
 ) {
+  useEffect(() => {
+    const invitation = () => {
+      const token = new URLSearchParams(location.hash.slice(1)).get("token");
+      // Camera can reopen the existing tab with a fragment-only navigation.
+      if (token && /^[a-f0-9]{32,128}$/i.test(token)) location.reload();
+    };
+    window.addEventListener("hashchange", invitation);
+    return () => window.removeEventListener("hashchange", invitation);
+  }, []);
   const [credentials] = useState(session);
   const [connection, setConnection] = useState<Connection>(
-    credentials.token ? "connecting" : "invalid",
+    credentials.removed
+      ? "removed"
+      : credentials.token
+        ? "connecting"
+        : "invalid",
   );
   const [world, setWorld] = useState<PhoneState | null>(null);
+  const [phone, setPhone] = useState<PhoneState["phone"] | null>(null);
   const [retry, setRetry] = useState(0);
   const latest = useRef({ viewport, input });
   const sequence = useRef(credentials.sequenceBase);
@@ -58,7 +85,7 @@ export function usePhoneConnection(
   }, [clearInput]);
 
   useEffect(() => {
-    if (!credentials.token || !hasViewport) return;
+    if (!credentials.token || credentials.removed || !hasViewport) return;
     let disposed = false;
     let paused = document.hidden;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -109,11 +136,18 @@ export function usePhoneConnection(
           cache: "no-store",
         });
         if (disposed || paused || mine !== generation) return;
-        if (response.status === 401) {
+        if (response.status === 401 || response.status === 410) {
           expired = true;
+          if (response.status === 410) {
+            try {
+              sessionStorage.setItem("phone-world.removed", "true");
+            } catch {
+              /* Current session still stops. */
+            }
+          }
           clearInput();
           setWorld(null);
-          setConnection("invalid");
+          setConnection(response.status === 410 ? "removed" : "invalid");
           return;
         }
         if (response.status === 409) {
@@ -133,11 +167,17 @@ export function usePhoneConnection(
             return;
           lastApplied = request.sequence;
           if (request.recover) recovery.current = false;
-          if (!next.nativeOnline || !next.connected || !next.snapshot) {
+          if (
+            !next.nativeOnline ||
+            !next.connected ||
+            !next.snapshot ||
+            !next.region
+          ) {
             latest.current.input = releasedInput();
             clearInput();
           }
           setWorld(next);
+          setPhone(next.phone);
           setConnection(
             next.nativeOnline && next.connected && next.snapshot
               ? "online"
@@ -209,6 +249,7 @@ export function usePhoneConnection(
   return {
     connection,
     world,
+    phone,
     returnToMac,
     reconnect,
     release: () => sendRelease.current?.(),

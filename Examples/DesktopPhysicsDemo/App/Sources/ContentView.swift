@@ -20,7 +20,7 @@ struct ContentView: View {
             Label(model.statusText, systemImage: model.overlayIsVisible ? "circle.fill" : "circle")
                 .foregroundStyle(model.errorMessage == nil ? Color.primary : Color.red)
 
-            Button("Phone screen…") { openWindow(id: "phone") }
+            Button("Phone screens…") { openWindow(id: "phone") }
 
             GroupBox("Spawn objects") {
                 VStack(alignment: .leading, spacing: 10) {

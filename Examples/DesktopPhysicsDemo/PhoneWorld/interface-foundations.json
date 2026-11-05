@@ -3,8 +3,14 @@
   "catalogRevision": 5,
   "project": "Desktop Phone World",
   "stage": "usefulness-proof",
-  "surfaces": ["web", "mobile-web"],
-  "features": ["theme", "localization", "responsive-ui"],
+  "surfaces": ["web", "mobile-web", "macos"],
+  "features": [
+    "theme",
+    "localization",
+    "responsive-ui",
+    "multi-region-shell",
+    "persistent-controls"
+  ],
   "classifications": [
     {
       "id": "multiple-appearances",
@@ -18,8 +24,8 @@
     },
     {
       "id": "multi-pane",
-      "status": "absent",
-      "reason": "Phone is one world canvas with controls; configuration lives in the separate native app."
+      "status": "present",
+      "reason": "Recorded context includes feature multi-pane or multi-region-shell or independent-panels."
     },
     {
       "id": "iconography",
@@ -62,10 +68,10 @@
       "version": 1,
       "applicable": true,
       "disposition": "adapt",
-      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "reason": "Native drag arrangement with stable screen IDs, labelled controls, fixed drag projection, ghost/drop feedback and scrolling ownership; phone remains a separate safe-area canvas.",
       "decisionPath": "DESIGN.md",
       "implementationState": "implemented",
-      "implementationPaths": ["src/"],
+      "implementationPaths": ["src/", "../App/Sources/PhoneWorldView.swift"],
       "verificationEvidence": [],
       "acceptanceEvidence": []
     },
@@ -86,10 +92,10 @@
       "version": 2,
       "applicable": true,
       "disposition": "adapt",
-      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "reason": "Native drag arrangement with stable screen IDs, labelled controls, fixed drag projection, ghost/drop feedback and scrolling ownership; phone remains a separate safe-area canvas.",
       "decisionPath": "DESIGN.md",
       "implementationState": "implemented",
-      "implementationPaths": ["src/"],
+      "implementationPaths": ["src/", "../App/Sources/PhoneWorldView.swift"],
       "verificationEvidence": [],
       "acceptanceEvidence": []
     },
@@ -122,22 +128,22 @@
       "version": 1,
       "applicable": true,
       "disposition": "adapt",
-      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "reason": "Native drag arrangement with stable screen IDs, labelled controls, fixed drag projection, ghost/drop feedback and scrolling ownership; phone remains a separate safe-area canvas.",
       "decisionPath": "DESIGN.md",
       "implementationState": "implemented",
-      "implementationPaths": ["src/"],
+      "implementationPaths": ["src/", "../App/Sources/PhoneWorldView.swift"],
       "verificationEvidence": [],
       "acceptanceEvidence": []
     },
     {
       "id": "shell.scroll-ownership",
       "version": 1,
-      "applicable": false,
-      "disposition": "not_applicable",
-      "reason": "Applicability depends on the explicit multi-pane classification.",
+      "applicable": true,
+      "disposition": "adapt",
+      "reason": "Native drag arrangement with stable screen IDs, labelled controls, fixed drag projection, ghost/drop feedback and scrolling ownership; phone remains a separate safe-area canvas.",
       "decisionPath": "DESIGN.md",
-      "implementationState": "not_started",
-      "implementationPaths": [],
+      "implementationState": "implemented",
+      "implementationPaths": ["src/", "../App/Sources/PhoneWorldView.swift"],
       "verificationEvidence": [],
       "acceptanceEvidence": []
     },
@@ -146,10 +152,10 @@
       "version": 1,
       "applicable": true,
       "disposition": "adapt",
-      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "reason": "Native drag arrangement with stable screen IDs, labelled controls, fixed drag projection, ghost/drop feedback and scrolling ownership; phone remains a separate safe-area canvas.",
       "decisionPath": "DESIGN.md",
       "implementationState": "implemented",
-      "implementationPaths": ["src/"],
+      "implementationPaths": ["src/", "../App/Sources/PhoneWorldView.swift"],
       "verificationEvidence": [],
       "acceptanceEvidence": []
     },

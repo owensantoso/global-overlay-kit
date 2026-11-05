@@ -10,10 +10,15 @@ import { chromium } from "playwright";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const token = "a".repeat(64);
 const requests = [];
+const clients = new Map();
+let placed = true;
+let mainClientID = null;
 let nativeOnline = true;
 let responseStatus = 200;
 let responseDelay = 0;
 let playerX = 1590;
+let rotation = 0;
+let asymmetric = false;
 
 preflight("network", "phone-world-browser-smoke-loopback");
 const server = createServer(async (req, res) => {
@@ -23,7 +28,22 @@ const server = createServer(async (req, res) => {
       for await (const chunk of req) chunks.push(chunk);
       const body = JSON.parse(Buffer.concat(chunks).toString());
       requests.push(body);
-      const regionHeight = (400 * body.viewport.height) / body.viewport.width;
+      if (!clients.has(body.clientID))
+        clients.set(body.clientID, {
+          id: `screen-${clients.size + 1}`,
+          label: `Phone ${clients.size + 1}`,
+          index: clients.size,
+        });
+      const own = clients.get(body.clientID);
+      const regionX = 1512 + own.index * 400;
+      const regionWidth =
+        rotation === 90
+          ? (400 * body.viewport.height) / body.viewport.width
+          : 400;
+      const regionHeight =
+        rotation === 90
+          ? 400
+          : (400 * body.viewport.height) / body.viewport.width;
       assert.equal(req.headers.authorization, `Bearer ${token}`);
       if (responseDelay)
         await new Promise((resolve) => setTimeout(resolve, responseDelay));
@@ -38,24 +58,66 @@ const server = createServer(async (req, res) => {
                 height: 982,
                 player: {
                   id: "same-native-player",
-                  x: playerX,
-                  y: Math.max(70, regionHeight / 2),
+                  x: asymmetric ? regionX + regionWidth * 0.25 : playerX,
+                  y: asymmetric
+                    ? regionHeight * 0.3
+                    : Math.max(70, regionHeight / 2),
                   vx: 0,
                   vy: 0,
-                  width: 34,
-                  height: 86,
+                  width: asymmetric ? 20 : 34,
+                  height: asymmetric ? 60 : 86,
                   facing: "right",
                   animation: "idle",
-                  asset: "fighter_Idle_0001.png",
-                  spriteWidth: 270,
-                  spriteHeight: 270,
-                  spriteOffsetY: 22,
+                  asset: asymmetric ? null : "fighter_Idle_0001.png",
+                  spriteWidth: asymmetric ? 20 : 270,
+                  spriteHeight: asymmetric ? 60 : 270,
+                  spriteOffsetY: asymmetric ? 0 : 22,
                 },
-                platforms: [{ x: 1512, y: 30, width: 400 }],
+                platforms: asymmetric
+                  ? [
+                      {
+                        x: regionX + regionWidth * 0.6,
+                        y: regionHeight * 0.8,
+                        width: regionWidth * 0.25,
+                      },
+                    ]
+                  : [{ x: 1512, y: 30, width: 400 }],
               }
             : null,
-          region: { x: 1512, y: 0, width: 400, height: regionHeight },
-          edge: "right",
+          phone: { id: own.id, label: own.label },
+          region: placed
+            ? {
+                x: regionX,
+                y: 0,
+                width: regionWidth,
+                height: regionHeight,
+                rotation,
+              }
+            : null,
+          seams: placed
+            ? [
+                {
+                  x1: regionX,
+                  y1: 0,
+                  x2: regionX,
+                  y2: regionHeight,
+                  neighborID: own.index === 0 ? "mac" : "screen-1",
+                  label: own.index === 0 ? "To Mac" : "To Phone 1",
+                },
+                ...(own.index === 0
+                  ? [
+                      {
+                        x1: regionX + regionWidth,
+                        y1: 0,
+                        x2: regionX + regionWidth,
+                        y2: regionHeight,
+                        neighborID: "screen-2",
+                        label: "To Phone 2",
+                      },
+                    ]
+                  : []),
+              ]
+            : [],
         }),
       );
       return;
@@ -105,7 +167,9 @@ const wait = async (predicate) => {
     await new Promise((resolve) => setTimeout(resolve, 30));
   }
 };
-const last = () => requests.at(-1);
+const lastFor = (clientID) =>
+  requests.findLast((request) => request.clientID === clientID);
+const last = () => (mainClientID ? lastFor(mainClientID) : requests.at(-1));
 try {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -117,7 +181,7 @@ try {
     if (message.type() !== "error") return;
     if (
       message.location().url.endsWith("/phone-world/api/phone") &&
-      /status of (401|409)/.test(message.text())
+      /status of (401|409|410)/.test(message.text())
     ) {
       expectedNetworkNotes.push(message.text());
     } else errors.push(message.text());
@@ -127,8 +191,11 @@ try {
   });
   await page.goto(`${origin}/phone-world/#token=${token}`);
   await page.locator('main[data-connection="online"]').waitFor();
+  mainClientID = await page.evaluate(() =>
+    sessionStorage.getItem("phone-world.clientID"),
+  );
   check(
-    (await page.getByRole("heading", { name: "Phone world" }).count()) === 1,
+    (await page.getByRole("heading", { name: "Phone 1" }).count()) === 1,
     "React entry renders one heading",
   );
   check(!new URL(page.url()).hash, "pairing capability removed from address");
@@ -187,6 +254,35 @@ try {
   await wait(() => !last()?.input.right);
   await page.keyboard.up("ArrowRight");
   check(true, "blur releases keyboard movement");
+  const secondContext = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    hasTouch: true,
+  });
+  const second = await secondContext.newPage();
+  second.on("pageerror", (error) => errors.push(error.message));
+  await second.goto(`${origin}/phone-world/#token=${token}`);
+  await second.getByRole("heading", { name: "Phone 2", exact: true }).waitFor();
+  const secondClientID = await second.evaluate(() =>
+    sessionStorage.getItem("phone-world.clientID"),
+  );
+  check(
+    secondClientID !== mainClientID,
+    "same QR creates separate stable phone identities",
+  );
+  await wait(
+    () =>
+      lastFor(secondClientID)?.viewport.width === 844 &&
+      last()?.viewport.width === 390,
+  );
+  check(true, "simultaneous phone viewports remain independent");
+  await second
+    .getByRole("button", { name: "Right", exact: true })
+    .dispatchEvent("pointerdown", {
+      pointerId: 31,
+      pointerType: "touch",
+      button: 0,
+    });
+  await wait(() => lastFor(secondClientID)?.input.right);
   await left.dispatchEvent("pointerdown", {
     pointerId: 20,
     pointerType: "touch",
@@ -214,6 +310,35 @@ try {
     document.dispatchEvent(new Event("visibilitychange"));
   });
   await page.locator('main[data-connection="online"]').waitFor();
+  check(
+    lastFor(secondClientID)?.input.right,
+    "hiding one phone does not release the other phone",
+  );
+  await second
+    .getByRole("button", { name: "Right", exact: true })
+    .dispatchEvent("pointercancel", { pointerId: 31, pointerType: "touch" });
+  await secondContext.close();
+  await page.reload();
+  await page.getByRole("heading", { name: "Phone 1", exact: true }).waitFor();
+  check(
+    (await page.evaluate(() =>
+      sessionStorage.getItem("phone-world.clientID"),
+    )) === mainClientID,
+    "reload keeps stable screen identity",
+  );
+  placed = false;
+  await page
+    .getByText("Connect this screen in the Mac layout.", { exact: true })
+    .waitFor();
+  check(
+    await left.isDisabled(),
+    "inactive screen explains placement and disables input",
+  );
+  placed = true;
+  await wait(() => last()?.input.left === false);
+  await page
+    .getByText("Connect this screen in the Mac layout.", { exact: true })
+    .waitFor({ state: "hidden" });
   responseDelay = 1200;
   await page.locator('main[data-connection="offline"]').waitFor();
   check(
@@ -255,6 +380,130 @@ try {
   await page.screenshot({
     path: resolve(root, "evidence/phone-landscape.png"),
   });
+  await page.setViewportSize({ width: 390, height: 844 });
+  asymmetric = true;
+  rotation = 90;
+  await page.getByText(/Rotated view/).waitFor();
+  await page.waitForTimeout(100);
+  const rotationPixels = async (turned) =>
+    page.locator("canvas").evaluate((canvas, turned) => {
+      const context = canvas.getContext("2d");
+      const width = canvas.width,
+        height = canvas.height;
+      const pixels = context.getImageData(0, 0, width, height).data;
+      const cx = width * (turned ? 0.3 : 0.25),
+        cy = height * (turned ? 0.25 : 0.7);
+      let minX = width,
+        minY = height,
+        maxX = -1,
+        maxY = -1;
+      const dark = (x, y) => {
+        const i = (Math.floor(y) * width + Math.floor(x)) * 4;
+        return (
+          pixels[i + 3] > 0 &&
+          pixels[i] < 60 &&
+          pixels[i + 1] < 70 &&
+          pixels[i + 2] < 80
+        );
+      };
+      for (
+        let y = Math.max(0, Math.floor(cy - height * 0.25));
+        y < Math.min(height, cy + height * 0.25);
+        y++
+      ) {
+        for (
+          let x = Math.max(0, Math.floor(cx - width * 0.17));
+          x < Math.min(width, cx + width * 0.17);
+          x++
+        ) {
+          if (dark(x, y)) {
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          }
+        }
+      }
+      const platform = turned
+        ? dark(width * 0.8, height * 0.7)
+        : dark(width * 0.7, height * 0.2);
+      const sampleX = turned ? width * 0.5 : 1,
+        sampleY = turned ? 1 : height * 0.5;
+      const i = (Math.floor(sampleY) * width + Math.floor(sampleX)) * 4;
+      return {
+        box: {
+          width: maxX - minX + 1,
+          height: maxY - minY + 1,
+          cx: (minX + maxX) / 2,
+          cy: (minY + maxY) / 2,
+        },
+        expected: { cx, cy },
+        platform,
+        seam:
+          pixels[i + 3] > 0 &&
+          pixels[i] < 30 &&
+          pixels[i + 1] > 100 &&
+          pixels[i + 2] > 130,
+      };
+    }, turned);
+  let pixels = await rotationPixels(true);
+  check(
+    Math.abs(pixels.box.cx - pixels.expected.cx) < 3 &&
+      Math.abs(pixels.box.cy - pixels.expected.cy) < 3,
+    "clockwise quarter-turn places asymmetric character at expected physical coordinates",
+  );
+  check(
+    pixels.box.width / pixels.box.height > 2.6 &&
+      pixels.box.width / pixels.box.height < 3.5,
+    "rotated character keeps proportions and turns its long axis",
+  );
+  check(
+    pixels.platform && pixels.seam,
+    "platform and To Mac seam rotate together with the world",
+  );
+  check(
+    last().viewport.width === 390 && last().viewport.height > 400,
+    "rotated projection still reports physical canvas dimensions",
+  );
+  await left.dispatchEvent("pointerdown", {
+    pointerId: 51,
+    pointerType: "touch",
+    button: 0,
+  });
+  await wait(() => last()?.input.left && !last()?.input.right);
+  await left.dispatchEvent("pointerup", {
+    pointerId: 51,
+    pointerType: "touch",
+  });
+  check(true, "unrotated Left control retains world-left meaning");
+  await page.screenshot({
+    path: resolve(root, "evidence/phone-rotated-portrait.png"),
+  });
+  await page.setViewportSize({ width: 844, height: 390 });
+  await wait(() => last()?.viewport.width === 844);
+  await page.waitForTimeout(100);
+  pixels = await rotationPixels(true);
+  check(
+    pixels.box.width / pixels.box.height > 2.6 &&
+      pixels.box.width / pixels.box.height < 3.5 &&
+      pixels.platform,
+    "rotated landscape device preserves world geometry",
+  );
+  await page.screenshot({
+    path: resolve(root, "evidence/phone-rotated-landscape.png"),
+  });
+  rotation = 0;
+  await page.getByText(/Rotated view/).waitFor({ state: "hidden" });
+  await page.waitForTimeout(100);
+  pixels = await rotationPixels(false);
+  check(
+    pixels.box.height / pixels.box.width > 2.6 &&
+      pixels.box.height / pixels.box.width < 3.5 &&
+      pixels.platform &&
+      pixels.seam,
+    "turning back restores upright character, platform and seams",
+  );
+  asymmetric = false;
   nativeOnline = false;
   await page.locator('main[data-connection="connecting"]').waitFor();
   check(
@@ -264,7 +513,7 @@ try {
   nativeOnline = true;
   await page.locator('main[data-connection="online"]').waitFor();
   responseStatus = 409;
-  await page.getByText("Another phone is connected", { exact: true }).waitFor();
+  await page.getByText("Session is full", { exact: true }).waitFor();
   check(
     await page.getByRole("button", { name: "Retry connection" }).isVisible(),
     "occupied pairing is recoverable",
@@ -272,6 +521,35 @@ try {
   responseStatus = 200;
   await page.getByRole("button", { name: "Retry connection" }).click();
   await page.locator('main[data-connection="online"]').waitFor();
+  responseStatus = 410;
+  await page.locator('main[data-connection="removed"]').waitFor();
+  check(
+    await page
+      .getByText("This phone was removed. Scan the QR code to join again.", {
+        exact: true,
+      })
+      .isVisible(),
+    "removed phone shows explicit scan-to-rejoin path",
+  );
+  const beforeReload = requests.length;
+  await page.reload();
+  await page.locator('main[data-connection="removed"]').waitFor();
+  await page.waitForTimeout(200);
+  check(
+    requests.length === beforeReload,
+    "removed URL does not silently refill a screen slot on reload",
+  );
+  responseStatus = 200;
+  const removedClientID = mainClientID;
+  await page.goto(`${origin}/phone-world/#token=${token}`);
+  await page.locator('main[data-connection="online"]').waitFor();
+  mainClientID = await page.evaluate(() =>
+    sessionStorage.getItem("phone-world.clientID"),
+  );
+  check(
+    mainClientID !== removedClientID,
+    "explicit QR scan creates a fresh identity after removal",
+  );
   responseStatus = 401;
   await page.locator('main[data-connection="invalid"]').waitFor();
   check(

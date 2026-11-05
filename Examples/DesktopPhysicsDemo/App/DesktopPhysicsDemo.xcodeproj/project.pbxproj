@@ -18,6 +18,7 @@
 		D12C6E7CD3C897D2054ABEA0 /* PhoneWorldConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527E678B79BE5408009E25B0 /* PhoneWorldConnection.swift */; };
 		DCC3F5AAD696B51E0A253C12 /* DesktopPhysicsSemanticActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */; };
 		ECE67FF0583925ACE224DA64 /* DesktopPhysicsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3205CC951ECE81728AA789DE /* DesktopPhysicsKit */; };
+		FF2A3F0146520842C2CDB9C4 /* PhoneWorldConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8733422A8D355ED177F99FC2 /* PhoneWorldConnectionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsAppIntents.swift; sourceTree = "<group>"; };
 		3226F3F21BE1E628E44AD7E7 /* DesktopPhysicsDemo */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DesktopPhysicsDemo; path = ..; sourceTree = SOURCE_ROOT; };
 		527E678B79BE5408009E25B0 /* PhoneWorldConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorldConnection.swift; sourceTree = "<group>"; };
+		8733422A8D355ED177F99FC2 /* PhoneWorldConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorldConnectionTests.swift; sourceTree = "<group>"; };
 		91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicsDemoModel.swift; sourceTree = "<group>"; };
 		A235EE7368E6CAAAC733B4B0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionLatencyDiagnostics.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */,
+				8733422A8D355ED177F99FC2 /* PhoneWorldConnectionTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCC3F5AAD696B51E0A253C12 /* DesktopPhysicsSemanticActionTests.swift in Sources */,
+				FF2A3F0146520842C2CDB9C4 /* PhoneWorldConnectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -36,23 +36,32 @@ export function WorldView({ world, message, onResize }: Props) {
     const context = canvas.getContext("2d")!;
     let frame = 0;
     const draw = () => {
-      const { width, height } = canvas.getBoundingClientRect();
+      const { width: actualWidth, height: actualHeight } =
+        canvas.getBoundingClientRect();
       const dpr = Math.min(devicePixelRatio || 1, 3);
       if (
-        canvas.width !== Math.round(width * dpr) ||
-        canvas.height !== Math.round(height * dpr)
+        canvas.width !== Math.round(actualWidth * dpr) ||
+        canvas.height !== Math.round(actualHeight * dpr)
       ) {
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
+        canvas.width = Math.round(actualWidth * dpr);
+        canvas.height = Math.round(actualHeight * dpr);
       }
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      context.clearRect(0, 0, width, height);
+      context.clearRect(0, 0, actualWidth, actualHeight);
       const state = current.current;
       const region =
         state?.nativeOnline && state.connected && state.snapshot
           ? state.region
           : null;
-      if (region && width > 0 && height > 0) {
+      if (region && actualWidth > 0 && actualHeight > 0) {
+        const rotated = region.rotation === 90;
+        const width = rotated ? actualHeight : actualWidth;
+        const height = rotated ? actualWidth : actualHeight;
+        context.save();
+        if (rotated) {
+          context.translate(actualWidth, 0);
+          context.rotate(Math.PI / 2);
+        }
         // A rotation can precede the next native region update. Fit uniformly
         // through that interval so the same character never stretches.
         const scaleX = Math.min(width / region.width, height / region.height);
@@ -78,39 +87,30 @@ export function WorldView({ world, message, onResize }: Props) {
         context.strokeStyle = "#0095b8";
         context.lineWidth = 4;
         context.beginPath();
-        const snapshot = state!.snapshot!;
         context.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
         context.fillStyle = "#007f9e";
-        if (state?.edge === "right" || state?.edge === "left") {
-          const low = Math.max(0, region.y);
-          const high = Math.min(snapshot.height, region.y + region.height);
-          const x = px(
-            state.edge === "right" ? region.x : region.x + region.width,
-          );
-          if (high > low) {
-            context.moveTo(x, py(low));
-            context.lineTo(x, py(high));
-            context.textAlign = state.edge === "right" ? "left" : "right";
+        for (const seam of state?.seams ?? []) {
+          const x1 = px(seam.x1),
+            y1 = py(seam.y1),
+            x2 = px(seam.x2),
+            y2 = py(seam.y2);
+          context.moveTo(x1, y1);
+          context.lineTo(x2, y2);
+          if (seam.x1 === seam.x2) {
+            const isLeft = Math.abs(seam.x1 - region.x) < 0.5;
+            context.textAlign = isLeft ? "left" : "right";
             context.fillText(
-              "To Mac",
-              x + (state.edge === "right" ? 12 : -12),
-              py(high) + 20,
+              seam.label,
+              x1 + (isLeft ? 12 : -12),
+              Math.min(y1, y2) + 20,
             );
-          }
-        } else {
-          const low = Math.max(0, region.x);
-          const high = Math.min(snapshot.width, region.x + region.width);
-          const y = py(
-            state?.edge === "top" ? region.y : region.y + region.height,
-          );
-          if (high > low) {
-            context.moveTo(px(low), y);
-            context.lineTo(px(high), y);
+          } else {
+            const isTop = Math.abs(seam.y1 - region.y - region.height) < 0.5;
             context.textAlign = "center";
             context.fillText(
-              "To Mac",
-              px((low + high) / 2),
-              y + (state?.edge === "top" ? -12 : 20),
+              seam.label,
+              (x1 + x2) / 2,
+              y1 + (isTop ? 20 : -12),
             );
           }
         }
@@ -155,6 +155,7 @@ export function WorldView({ world, message, onResize }: Props) {
           }
           context.restore();
         }
+        context.restore();
         context.restore();
       }
       frame = requestAnimationFrame(draw);

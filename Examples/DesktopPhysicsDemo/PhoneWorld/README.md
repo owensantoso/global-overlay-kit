@@ -1,10 +1,14 @@
 # Phone world
 
-Desktop Physics Demo can pair one phone browser as an adjoining screen. The Mac simulates one character; the phone draws the same character in the neighbouring rectangle. Walking and jumping across the opening preserve identity and momentum.
+Desktop Physics Demo can pair up to eight phone browsers as adjoining screens. The Mac simulates one character; the phone draws the same character in the neighbouring rectangle. Walking and jumping across the opening preserve identity and momentum.
 
-Open the signed app, choose **Phone screen… → Connect phone**, and scan its QR code. The phone must be on the same private Tailscale network. Choose Left, Right, Below or Above and adjust alignment/scale to match the physical arrangement. Rotation follows the phone canvas. The diagram represents the web canvas, excluding browser chrome and controls.
+Open the signed app, choose **Phone screens… → Connect phones**, and scan the same QR code from each phone. All phones need the same private Tailscale network. The page and native canvas display matching **Phone 1**, **Phone 2** labels. New screens join beside the active world.
 
-The phone has Left, Right, Jump and Run controls. Release and press Jump again for another jump. Above/below placements include a column of one-way ledges: repeated jumps climb the column; moving beside it lets the character fall. **Return to Mac** recovers the same character. Disconnecting closes the opening and rescues an offscreen character.
+Drag a numbered phone rectangle next to the Mac or another connected screen. A ghost previews the snapped position; an invalid drop returns to its prior position. The character crosses the highlighted shared openings. The Mac stays fixed. Select a phone and drag its labelled corner Resize handle, or adjust its Scale slider. Resize ghosts preview the changed screen and its dependent neighbours before committing. Use Rotate view for a clockwise quarter-turn between portrait and landscape; the world canvas turns too, while movement controls keep their world direction. Focus a screen and use arrow keys along its snapped edge (Shift moves farther). Rotation preserves attachments where possible. Controls and browser chrome remain outside the measured world canvas.
+
+Phone Left, Right, Jump and Run controls move the same character. Opposite directions from different phones cancel. Higher/lower neighbours have one-way ledges; repeated jumps climb the column and moving beside it permits falling. **Return to Mac** recovers the same character.
+
+An offline middle phone closes its region; downstream screens show **Needs connection** until reattached. Removing a phone retires that browser's screen without renumbering the others. Its page can join again by explicitly scanning the QR code. **Disconnect all phones** closes the phone world. **Reset all pairings** retires the entire session and provides a new code.
 
 ## Development
 
@@ -25,12 +29,12 @@ The production companion is `server/server.mjs`. It reads a machine-local JSON c
 
 The deployment helper writes this companion's files and LaunchAgent definition; use the maintained private-tailnet-delivery protected wrapper for deployment, service and route changes. A subpath proxy must retain `/phone-world` in its backend target because Tailscale strips the matched frontend prefix. Preserve unrelated routes. Never use Funnel.
 
-Pairing capabilities rotate with a new code or native session. One browser holds the phone seat. Native and phone requests carry monotonic sequences; stale held inputs cannot overwrite a newer release. Movement expires after 400 ms without a phone heartbeat; a longer connection grace closes the opening after 750 ms. Native disappearance clears browser state after 1.5 seconds. Hidden-page, cancellation and blur paths release controls. The native physics watchdog independently releases controls if its bridge stops.
+Pairing capabilities rotate with a new code or native session. Each browser has its own stable screen identity, sequence, viewport and heartbeat. Native requests also carry monotonic sequences; stale held inputs cannot overwrite a newer release. Only screens in the native active component contribute input. Movement expires after 400 ms without a phone heartbeat; a longer connection grace closes the opening after 750 ms. Native disappearance clears browser state after 1.5 seconds. Hidden-page, cancellation and blur paths release controls. The native physics watchdog independently releases controls if its bridge stops.
 
 ## Verification and remaining acceptance
 
-Automated evidence includes real elapsed Mac→phone→Mac traversal with the same native entity and nonzero momentum, climbing every ledge below/above the Mac, layout-preserving state, disconnection rescue, one-way contacts, remote input expiry, pairing exclusivity, request ordering, real HTTP security checks, and portrait/landscape browser controls with the shipped artwork.
+Automated evidence includes real elapsed Mac→Phone 1→Phone 2→Phone 1→Mac traversal with the same native entity and nonzero momentum, climbing every ledge below/above the Mac, layout-preserving state, disconnection rescue, one-way contacts, remote input expiry, independent simultaneous pairing, request ordering, real HTTP security checks, and portrait/landscape browser controls with the shipped artwork.
 
-The private runtime was also observed paired to a live browser with the native character inside its phone region. This is telemetry evidence; perceived latency, physical scale, QR scanning and actual iPhone Safari toolbar/rotation behaviour remain physical checks. Browser automation uses Chrome and a separate test authority.
+Owen accepted single-phone traversal on 2026-11-05: “yeah it works, i can go into the phone and back.” That version was merged in PR #1. The multiple-phone arrangement and its physical feel require a new acceptance check. Actual iPhone Safari toolbar/rotation behaviour remains a device check. Browser automation uses Chrome and a separate test authority.
 
 The installed Agent Continuity doctor reports document-format/tooling drift. Existing structured docs and generated views are preserved; this plain example-local brief and README record the bounded prototype.

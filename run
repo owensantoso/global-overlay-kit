@@ -6,6 +6,7 @@ DOCS_TOOL="$ROOT_DIR/scripts/agent-continuity-docs"
 DEMO_PACKAGE_DIR="$ROOT_DIR/Examples/DesktopPhysicsDemo"
 DEMO_APP_DIR="$DEMO_PACKAGE_DIR/App"
 DEMO_DERIVED_DATA="$DEMO_APP_DIR/DerivedData"
+DEMO_TEST_DERIVED_DATA="$DEMO_APP_DIR/TestDerivedData"
 DEMO_APP="$DEMO_DERIVED_DATA/Build/Products/Debug/Desktop Physics Demo.app"
 DESKTOP_GAME_CORE_DIR="$ROOT_DIR/../DesktopGameCore"
 
@@ -49,6 +50,17 @@ check_desktop_physics_demo() {
   fi
   swift test --package-path "$DEMO_PACKAGE_DIR"
   build_demo_app
+  (
+    cd "$DEMO_APP_DIR"
+    xcodebuild \
+      -project DesktopPhysicsDemo.xcodeproj \
+      -scheme DesktopPhysicsDemo \
+      -configuration Debug \
+      -destination 'platform=macOS,arch=arm64' \
+      -derivedDataPath "$DEMO_TEST_DERIVED_DATA" \
+      PRODUCT_BUNDLE_IDENTIFIER=com.owensantoso.DesktopPhysicsVerification \
+      test
+  )
   npm --prefix "$DEMO_PACKAGE_DIR/PhoneWorld" run verify
 }
 
