@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "desktop-phone-world.cross-seam",
+  "product": "Desktop Phone World",
+  "interaction": {
+    "kind": "projection",
+    "trigger": "Walk or jump across the shared opening"
+  },
+  "states": {
+    "source": {
+      "id": "mac",
+      "representation": "Native SpriteKit player in Mac rectangle"
+    },
+    "target": {
+      "id": "phone",
+      "representation": "Canvas projection of same player in adjacent phone rectangle"
+    }
+  },
+  "semanticFamily": {
+    "entity": {
+      "key": "player",
+      "label": "Same native player",
+      "identity": {
+        "namespace": "desktop-physics",
+        "kind": "player",
+        "id": "spawn-uuid"
+      }
+    },
+    "facets": [
+      {
+        "key": "pose",
+        "label": "World position and velocity"
+      },
+      {
+        "key": "appearance",
+        "label": "Shipped frame and facing"
+      }
+    ],
+    "relationships": [
+      {
+        "key": "regions",
+        "label": "Adjacent Mac and phone rectangles"
+      }
+    ]
+  },
+  "workingState": [
+    {
+      "key": "layout",
+      "label": "Side alignment and scale"
+    }
+  ],
+  "controls": [
+    {
+      "key": "input",
+      "label": "Local and phone movement"
+    }
+  ],
+  "mappings": [
+    {
+      "key": "player",
+      "kind": "entity",
+      "role": "persistent",
+      "owner": "native-world",
+      "source": ["mac:player"],
+      "target": ["phone:player"]
+    },
+    {
+      "key": "pose",
+      "kind": "facet",
+      "role": "persistent",
+      "owner": "native-world",
+      "source": ["mac:pose"],
+      "target": ["phone:pose"]
+    },
+    {
+      "key": "appearance",
+      "kind": "facet",
+      "role": "persistent",
+      "owner": "native-world",
+      "source": ["mac:appearance"],
+      "target": ["phone:appearance"]
+    },
+    {
+      "key": "regions",
+      "kind": "relationship",
+      "role": "persistent",
+      "owner": "native-world",
+      "source": ["mac:regions"],
+      "target": ["phone:regions"]
+    },
+    {
+      "key": "input",
+      "kind": "control",
+      "role": "persistent",
+      "owner": "phone-connection",
+      "source": ["mac:input"],
+      "target": ["phone:input"]
+    },
+    {
+      "key": "layout",
+      "kind": "state",
+      "role": "persistent",
+      "owner": "phone-connection",
+      "source": ["mac:layout"],
+      "target": ["phone:layout"]
+    }
+  ],
+  "paths": {
+    "forward": "The same native player crosses the open shared boundary; the phone clips its world coordinates.",
+    "reverse": "Walk or jump across the same opening back; identity, velocity and jump state persist.",
+    "interruption": "Latest geometry owns the opening; stale input expires and unavailable phone returns the character to Mac.",
+    "fallback": "Disconnect closes the seam and rescues the same player to the Mac; labelled Return to Mac provides recovery.",
+    "reducedMotion": "No decorative transition; both views draw the current authoritative frame."
+  },
+  "context": {
+    "identity": {
+      "mode": "preserve",
+      "commitment": "One spawn UUID for one native node."
+    },
+    "spatial": {
+      "mode": "preserve",
+      "commitment": "One bottom-left world coordinate system and adjoining rectangles."
+    },
+    "context": {
+      "mode": "preserve",
+      "commitment": "Cyan openings and placement diagram explain the relationship."
+    },
+    "state": {
+      "mode": "preserve",
+      "commitment": "Velocity, jump state and facing stay native-owned."
+    },
+    "control": {
+      "mode": "preserve",
+      "commitment": "Phone and Mac inputs feed one controller."
+    },
+    "task": {
+      "mode": "preserve",
+      "commitment": "Continue walking or jumping across either screen."
+    }
+  },
+  "checkpoints": {
+    "start": "One native character inside Mac region.",
+    "midpoint": "Same ID spans the seam; each renderer clips its own visible part.",
+    "settled": "Phone draws same frame and pose while Mac simulation remains authoritative.",
+    "reverse": "Same native node returns to Mac.",
+    "interrupted": "Stale inputs released, latest region used, offscreen player rescued if disconnected.",
+    "fallback": "Original Mac world remains usable.",
+    "reducedMotion": "Identical world and input ownership without decorative effects."
+  }
+}

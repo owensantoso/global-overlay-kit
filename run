@@ -49,6 +49,7 @@ check_desktop_physics_demo() {
   fi
   swift test --package-path "$DEMO_PACKAGE_DIR"
   build_demo_app
+  npm --prefix "$DEMO_PACKAGE_DIR/PhoneWorld" run verify
 }
 
 print_help() {
@@ -60,6 +61,7 @@ GlobalOverlayKit commands
   ./run demo     build and launch the desktop physics example
   ./run demo-trace  launch the demo with bounded trajectory logs
   ./run desktop-physics-check  verify the optional paired-workspace example
+  ./run phone-world-check  verify the phone page, relay, and browser controls
   ./run docs     refresh and validate Agent Continuity docs
   ./run check    run the complete local verification baseline
 
@@ -89,6 +91,9 @@ case "${1:-help}" in
     ;;
   desktop-physics-check)
     check_desktop_physics_demo
+    ;;
+  phone-world-check)
+    npm --prefix "$DEMO_PACKAGE_DIR/PhoneWorld" run verify
     ;;
   docs)
     cd "$ROOT_DIR"

@@ -109,6 +109,10 @@ final class DesktopGameInputState: @unchecked Sendable {
 
     private let monotonicTime: @Sendable () -> TimeInterval
     private let lock = NSLock()
+    private var phoneInput = DesktopPhoneInput.released
+    private var phoneInputAt: TimeInterval?
+    private var phoneJumpPressedAt: TimeInterval?
+    static let phoneInputTimeout: TimeInterval = 0.4
     private var active = false
     private var controlScheme: DesktopGameControlScheme = .both
     private var spacebarJumps = true
@@ -256,34 +260,54 @@ final class DesktopGameInputState: @unchecked Sendable {
         monotonicTime()
     }
 
+    func setPhoneInput(_ input: DesktopPhoneInput) {
+        lock.withLock {
+            let now = monotonicTime()
+            expirePhoneInput(at: now)
+            if input.jump && !phoneInput.jump { phoneJumpPressedAt = now }
+            if !input.jump { phoneJumpPressedAt = nil }
+            phoneInput = input
+            phoneInputAt = now
+        }
+    }
+
+    private func expirePhoneInput(at now: TimeInterval) {
+        if let phoneInputAt, now - phoneInputAt >= Self.phoneInputTimeout {
+            phoneInput = .released
+            phoneJumpPressedAt = nil
+            self.phoneInputAt = nil
+        }
+    }
+
     func consumeSnapshot() -> DesktopGameInputSnapshot {
         lock.withLock {
-            let left = !heldKeys.isDisjoint(with: KeyCode.left(for: controlScheme))
-            let right = !heldKeys.isDisjoint(with: KeyCode.right(for: controlScheme))
+            expirePhoneInput(at: monotonicTime())
+            let left = phoneInput.left || !heldKeys.isDisjoint(with: KeyCode.left(for: controlScheme))
+            let right = phoneInput.right || !heldKeys.isDisjoint(with: KeyCode.right(for: controlScheme))
             let direction: CGFloat = left == right ? 0 : (left ? -1 : 1)
             let downwardIntent = !heldKeys.isDisjoint(
                 with: KeyCode.down(for: controlScheme)
             )
-            let snapshot = DesktopGameInputSnapshot(
+            return DesktopGameInputSnapshot(
                 horizontalDirection: direction,
-                jumpPressedAt: jumpPressedAt,
+                jumpPressedAt: [jumpPressedAt, phoneJumpPressedAt].compactMap { $0 }.max(),
                 dropThroughPressedAt: dropThroughPressedAt,
-                jumpHeld: !heldKeys.isDisjoint(with: KeyCode.jump(
+                jumpHeld: phoneInput.jump || !heldKeys.isDisjoint(with: KeyCode.jump(
                     for: controlScheme,
                     spacebarJumps: spacebarJumps
                 )),
                 downwardIntent: downwardIntent,
-                runHeld: runHeld,
-                sitting: sitting,
+                runHeld: runHeld || phoneInput.run,
+                sitting: sitting && !phoneInput.left && !phoneInput.right && !phoneInput.jump,
                 wallRunIntentDirection: wallRunIntentDirection
             )
-            return snapshot
         }
     }
 
     func consumeJumpRequest() {
         lock.withLock {
             jumpPressedAt = nil
+            phoneJumpPressedAt = nil
         }
     }
 
@@ -295,6 +319,9 @@ final class DesktopGameInputState: @unchecked Sendable {
 
     func discardJumpRequest(olderThan cutoff: TimeInterval) {
         lock.withLock {
+            if let phoneJumpPressedAt, phoneJumpPressedAt < cutoff {
+                self.phoneJumpPressedAt = nil
+            }
             if let jumpPressedAt, jumpPressedAt < cutoff {
                 self.jumpPressedAt = nil
             }

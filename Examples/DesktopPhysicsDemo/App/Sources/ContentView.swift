@@ -5,6 +5,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var model: PhysicsDemoModel
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -18,6 +19,8 @@ struct ContentView: View {
 
             Label(model.statusText, systemImage: model.overlayIsVisible ? "circle.fill" : "circle")
                 .foregroundStyle(model.errorMessage == nil ? Color.primary : Color.red)
+
+            Button("Phone screen…") { openWindow(id: "phone") }
 
             GroupBox("Spawn objects") {
                 VStack(alignment: .leading, spacing: 10) {

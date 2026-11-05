@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "catalogRevision": 5,
+  "project": "Desktop Phone World",
+  "stage": "usefulness-proof",
+  "surfaces": ["web", "mobile-web"],
+  "features": ["theme", "localization", "responsive-ui"],
+  "classifications": [
+    {
+      "id": "multiple-appearances",
+      "status": "absent",
+      "reason": "One light appearance in this usefulness proof."
+    },
+    {
+      "id": "mobile-web",
+      "status": "present",
+      "reason": "Recorded context includes surface mobile-web."
+    },
+    {
+      "id": "multi-pane",
+      "status": "absent",
+      "reason": "Phone is one world canvas with controls; configuration lives in the separate native app."
+    },
+    {
+      "id": "iconography",
+      "status": "absent",
+      "reason": "Labelled text buttons; character art is world content, not a navigation pictogram."
+    },
+    {
+      "id": "locally-resolved-interactions",
+      "status": "absent",
+      "reason": "Controls drive native physics over the live relay; no search or local navigation promise."
+    }
+  ],
+  "contracts": [
+    {
+      "id": "search.explainable",
+      "version": 2,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "No catalog applicability signal matched the current project context.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "state.addressable",
+      "version": 1,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "No catalog applicability signal matched the current project context.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "appearance.theme-ready",
+      "version": 1,
+      "applicable": true,
+      "disposition": "adapt",
+      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "implemented",
+      "implementationPaths": ["src/"],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "appearance.theme-transition",
+      "version": 1,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "Applicability depends on the explicit multiple-appearances classification.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "control.action-feedback",
+      "version": 2,
+      "applicable": true,
+      "disposition": "adapt",
+      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "implemented",
+      "implementationPaths": ["src/"],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "iconography.source-integrity",
+      "version": 1,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "Applicability depends on the explicit iconography classification.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "interaction.local-response",
+      "version": 1,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "Applicability depends on the explicit locally-resolved-interactions classification.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "localization.ready",
+      "version": 1,
+      "applicable": true,
+      "disposition": "adapt",
+      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "implemented",
+      "implementationPaths": ["src/"],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "shell.scroll-ownership",
+      "version": 1,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "Applicability depends on the explicit multi-pane classification.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "composition.mobile-separate",
+      "version": 1,
+      "applicable": true,
+      "disposition": "adapt",
+      "reason": "Use semantic CSS tokens, centralized messages, labelled controls and a separate phone canvas/safe-area layout; bounded English and light appearance prototype.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "implemented",
+      "implementationPaths": ["src/"],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    },
+    {
+      "id": "mobile.text-entry-focus",
+      "version": 2,
+      "applicable": false,
+      "disposition": "not_applicable",
+      "reason": "Phone has no text input fields; pairing is scanned and game controls are buttons.",
+      "decisionPath": "DESIGN.md",
+      "implementationState": "not_started",
+      "implementationPaths": [],
+      "verificationEvidence": [],
+      "acceptanceEvidence": []
+    }
+  ]
+}
