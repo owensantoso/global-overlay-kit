@@ -21,6 +21,14 @@ struct DesktopPhysicsDemoApp: App {
         .commands {
             DemoCommands()
         }
+        Window("Phone screen", id: "phone") {
+            if let connection = model.phoneConnection {
+                PhoneWorldView(connection: connection)
+            } else {
+                Text("Open Desktop Physics controls first.").padding()
+            }
+        }
+        .windowResizability(.contentSize)
     }
 }
 
@@ -74,6 +82,7 @@ private final class DemoAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        PhysicsDemoModel.shared.stop()
         if let semanticActionObserver {
             DistributedNotificationCenter.default().removeObserver(
                 semanticActionObserver
@@ -87,6 +96,8 @@ private struct DemoCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .windowArrangement) {
+            Button("Show Phone Screen") { openWindow(id: "phone") }
+                .keyboardShortcut("p", modifiers: [.command, .shift])
             Button("Show Desktop Physics Controls") {
                 openWindow(id: "main")
             }

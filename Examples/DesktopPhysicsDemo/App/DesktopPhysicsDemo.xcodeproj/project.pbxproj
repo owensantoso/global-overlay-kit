@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		18126084C69A2544554593EA /* DesktopPhysicsAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */; };
+		5AB8AAE6EA8ADFAD70660405 /* PhoneWorldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15B64AF5D4704B1D81F582DD /* PhoneWorldView.swift */; };
 		8694CA4095200538C41726E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A235EE7368E6CAAAC733B4B0 /* ContentView.swift */; };
 		8BA9A0B9960BA452B77898D9 /* DesktopPhysicsSemanticAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */; };
 		968DD36C71844D4717B43E0A /* ActionLatencyDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */; };
 		B0A28FA02E46343A8C0E4BE0 /* SemanticActionTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D031B65336D6FCC4DA3EE6F7 /* SemanticActionTransport.swift */; };
 		B48FDF6E269C34D514826CC7 /* PhysicsDemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */; };
 		BDD9F5FD2221360FED8CCA17 /* DesktopPhysicsDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DACB2D56E6BD2E3684C374C4 /* DesktopPhysicsDemoApp.swift */; };
+		D12C6E7CD3C897D2054ABEA0 /* PhoneWorldConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527E678B79BE5408009E25B0 /* PhoneWorldConnection.swift */; };
 		DCC3F5AAD696B51E0A253C12 /* DesktopPhysicsSemanticActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */; };
 		ECE67FF0583925ACE224DA64 /* DesktopPhysicsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3205CC951ECE81728AA789DE /* DesktopPhysicsKit */; };
 /* End PBXBuildFile section */
@@ -31,8 +33,10 @@
 /* Begin PBXFileReference section */
 		02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsSemanticAction.swift; sourceTree = "<group>"; };
 		0E91D5C981A84D6BE8A115AD /* DesktopPhysicsSemanticActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsSemanticActionTests.swift; sourceTree = "<group>"; };
+		15B64AF5D4704B1D81F582DD /* PhoneWorldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorldView.swift; sourceTree = "<group>"; };
 		295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopPhysicsAppIntents.swift; sourceTree = "<group>"; };
 		3226F3F21BE1E628E44AD7E7 /* DesktopPhysicsDemo */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DesktopPhysicsDemo; path = ..; sourceTree = SOURCE_ROOT; };
+		527E678B79BE5408009E25B0 /* PhoneWorldConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorldConnection.swift; sourceTree = "<group>"; };
 		91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhysicsDemoModel.swift; sourceTree = "<group>"; };
 		A235EE7368E6CAAAC733B4B0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		ADBE3DCA4FAB38ED4F49BE10 /* ActionLatencyDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionLatencyDiagnostics.swift; sourceTree = "<group>"; };
@@ -71,6 +75,8 @@
 				295CC30090BEAA47533E13CA /* DesktopPhysicsAppIntents.swift */,
 				DACB2D56E6BD2E3684C374C4 /* DesktopPhysicsDemoApp.swift */,
 				02F58B3A96C0AC1747F6922F /* DesktopPhysicsSemanticAction.swift */,
+				527E678B79BE5408009E25B0 /* PhoneWorldConnection.swift */,
+				15B64AF5D4704B1D81F582DD /* PhoneWorldView.swift */,
 				91F353F1E900597216C9B110 /* PhysicsDemoModel.swift */,
 				D031B65336D6FCC4DA3EE6F7 /* SemanticActionTransport.swift */,
 			);
@@ -195,6 +201,8 @@
 				18126084C69A2544554593EA /* DesktopPhysicsAppIntents.swift in Sources */,
 				BDD9F5FD2221360FED8CCA17 /* DesktopPhysicsDemoApp.swift in Sources */,
 				8BA9A0B9960BA452B77898D9 /* DesktopPhysicsSemanticAction.swift in Sources */,
+				D12C6E7CD3C897D2054ABEA0 /* PhoneWorldConnection.swift in Sources */,
+				5AB8AAE6EA8ADFAD70660405 /* PhoneWorldView.swift in Sources */,
 				B48FDF6E269C34D514826CC7 /* PhysicsDemoModel.swift in Sources */,
 				B0A28FA02E46343A8C0E4BE0 /* SemanticActionTransport.swift in Sources */,
 			);

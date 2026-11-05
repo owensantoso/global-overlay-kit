@@ -26,6 +26,7 @@ final class PhysicsDemoModel: ObservableObject {
     @Published private(set) var maximumPlayerJumpHeight: CGFloat = 900
     @Published private(set) var errorMessage: String?
     @Published private(set) var controlMessage: String?
+    @Published private(set) var phoneConnection: PhoneWorldConnection?
     @Published var selectedShape: DesktopPhysicsShape = .random
     @Published var selectedPlayerAppearance: DesktopPlayerAppearance = .stickFigure
     @Published var randomizeObjectSize = false
@@ -60,6 +61,7 @@ final class PhysicsDemoModel: ObservableObject {
             self?.applyWindowPlatformState(state)
         }
         self.world = world
+        phoneConnection = PhoneWorldConnection(world: world)
         maximumPlayerJumpHeight = world.maximumPlayerJumpHeight
         playerJumpHeight = world.playerJumpHeight
         world.show()
@@ -289,6 +291,7 @@ final class PhysicsDemoModel: ObservableObject {
     }
 
     func stop() {
+        phoneConnection?.disconnect()
         world?.stop()
         refreshWorldState()
     }
