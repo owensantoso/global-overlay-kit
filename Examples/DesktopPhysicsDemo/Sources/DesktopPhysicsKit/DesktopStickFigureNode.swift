@@ -103,6 +103,7 @@ final class DesktopStickFigureNode: SKNode {
     static let collisionSize = CGSize(width: 34, height: 86)
 
     private struct Frame {
+        let asset: String
         let texture: SKTexture
         let mask: DesktopPaintedAlphaMask
     }
@@ -119,6 +120,7 @@ final class DesktopStickFigureNode: SKNode {
 
     private let sprite = SKSpriteNode(texture: idleFrames[0].texture)
     private var currentFrame = idleFrames[0]
+    var currentAsset: String { currentFrame.asset }
     private var stateStartedAt: TimeInterval = 0
 
     private(set) var animationState = DesktopCharacterAnimationState(
@@ -240,6 +242,7 @@ final class DesktopStickFigureNode: SKNode {
         let texture = SKTexture(cgImage: image)
         texture.filteringMode = .linear
         return Frame(
+            asset: name + ".png",
             texture: texture,
             mask: DesktopPaintedAlphaMask(cgImage: image)
         )

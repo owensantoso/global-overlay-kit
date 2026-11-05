@@ -16,6 +16,7 @@ final class DesktopPhysicsScene: SKScene {
         static let boundary: UInt32 = 1 << 2
         static let player: UInt32 = 1 << 3
         static let windowPlatform: UInt32 = 1 << 4
+        static let objectBoundary: UInt32 = 1 << 5
     }
 
     private static let objectName = "desktop-physics-object"
@@ -55,6 +56,11 @@ final class DesktopPhysicsScene: SKScene {
     private let gameWorldBackdrop = SKSpriteNode(color: .white, size: .zero)
     private var playerBoundaryNode: SKNode?
     private var playerNode: SKNode?
+    private var playerID: String?
+    private(set) var phoneRegion: CGRect?
+    private var phoneSeamNode: SKNode?
+    private var phonePlatforms: [DesktopPhonePlatformSnapshot] = []
+    private var phonePlatformNode: SKNode?
     private var stickFigureNode: DesktopStickFigureNode?
     private var playerHalfWidth: CGFloat = 24
     private var playerHalfHeight: CGFloat = 24
@@ -194,7 +200,97 @@ final class DesktopPhysicsScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
         gameWorldBackdrop.size = size
+        if let phoneRegion, DesktopPhoneGeometry(macSize: size, phone: phoneRegion) == nil {
+            setPhoneRegion(nil)
+        } else {
+            installBoundary()
+        }
+    }
+
+    var phoneSnapshot: DesktopPhoneSnapshot {
+        let player: DesktopPhonePlayerSnapshot?
+        if let node = playerNode, let id = playerID, let body = node.physicsBody {
+            player = DesktopPhonePlayerSnapshot(
+                id: id, x: node.position.x, y: node.position.y,
+                vx: body.velocity.dx, vy: body.velocity.dy,
+                width: playerHalfWidth * 2, height: playerHalfHeight * 2,
+                spriteWidth: stickFigureNode == nil ? playerHalfWidth * 2 : 270,
+                spriteHeight: stickFigureNode == nil ? playerHalfHeight * 2 : 270,
+                spriteOffsetY: stickFigureNode == nil ? 0 : 22,
+                facing: playerFacing == .left ? "left" : "right",
+                animation: stickFigureNode?.animationState.motion.rawValue ?? "idle",
+                asset: stickFigureNode?.currentAsset
+            )
+        } else {
+            player = nil
+        }
+        return DesktopPhoneSnapshot(width: size.width, height: size.height, player: player, platforms: phonePlatforms)
+    }
+
+    func setPhoneRegion(_ region: CGRect?) {
+        let valid = region.flatMap { DesktopPhoneGeometry(macSize: size, phone: $0)?.phone }
+        guard valid != phoneRegion else { return }
+        // Keep continuous state when the new union still contains the whole character.
+        if let playerNode {
+            let bodyBounds = CGRect(
+                x: playerNode.position.x - playerHalfWidth,
+                y: playerNode.position.y - playerHalfHeight,
+                width: playerHalfWidth * 2, height: playerHalfHeight * 2
+            )
+            let mac = CGRect(origin: .zero, size: size)
+            let corners = [
+                CGPoint(x: bodyBounds.minX, y: bodyBounds.minY),
+                CGPoint(x: bodyBounds.maxX, y: bodyBounds.minY),
+                CGPoint(x: bodyBounds.minX, y: bodyBounds.maxY),
+                CGPoint(x: bodyBounds.maxX, y: bodyBounds.maxY)
+            ]
+            func containsIncludingEdges(_ rect: CGRect, _ point: CGPoint) -> Bool {
+                point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY
+            }
+            let stillVisible = corners.allSatisfy { point in
+                containsIncludingEdges(mac, point) || valid.map { containsIncludingEdges($0, point) } == true
+            }
+            if !stillVisible { returnPhonePlayerToMac() }
+        }
+        phoneRegion = valid
+        inputState.setPhoneInput(.released)
         installBoundary()
+    }
+
+    func returnPhonePlayerToMac() {
+        guard let playerNode else { return }
+        endObjectDrag(timestamp: inputState.currentMonotonicTime(), applyingThrow: false)
+        var entryX = min(max(playerNode.position.x, playerHalfWidth + 8), max(playerHalfWidth + 8, size.width - playerHalfWidth - 8))
+        if let phoneRegion, phoneRegion.maxY == 0 {
+            if phoneRegion.minX >= playerHalfWidth * 2 + 16 {
+                entryX = min(entryX, phoneRegion.minX - playerHalfWidth - 8)
+            } else if phoneRegion.maxX <= size.width - playerHalfWidth * 2 - 16 {
+                entryX = max(entryX, phoneRegion.maxX + playerHalfWidth + 8)
+            } else if let lastStep = phonePlatforms.last {
+                entryX = lastStep.x + lastStep.width / 2
+            }
+        }
+        playerNode.position = CGPoint(x: entryX, y: playerHalfHeight + 8)
+        playerNode.physicsBody?.velocity = .zero
+        playerIsGrounded = false
+        lastGroundedAt = nil
+        playerWallSide = 0
+        lastWallSide = 0
+        lastWallContactAt = nil
+        playerWindowWallContact = nil
+        lastWindowWallContact = nil
+        supportedWindowID = nil
+        supportedWindowEdge = nil
+        supportedWindowY = nil
+        ignoredWindowPlatformID = nil
+        ignoredWindowPlatformY = nil
+        wallTraversalState = nil
+        wallJumpControlLockedUntil = nil
+        wallRunStartedAt = nil
+        jumpState = DesktopPlatformerJumpState()
+        playerFootBeforePhysics = nil
+        playerPositionBeforePhysics = nil
+        inputState.setPhoneInput(.released)
     }
 
     func spawn(_ request: DesktopPhysicsSpawnRequest) {
@@ -221,7 +317,7 @@ final class DesktopPhysicsScene: SKScene {
         body.categoryBitMask = Category.object
         body.collisionBitMask = Category.object
             | Category.cursor
-            | Category.boundary
+            | Category.objectBoundary
             | Category.player
             | Category.windowPlatform
         node.physicsBody = body
@@ -594,6 +690,7 @@ final class DesktopPhysicsScene: SKScene {
         playerControllerProfile.maximumJumpHeight = clamped
         playerControllerProfile.minimumJumpHeight = clamped * tapRatio
         playerControllerProfile.wallJumpVerticalSpeed = playerControllerProfile.jumpVelocity
+        if phoneRegion != nil { installBoundary() }
     }
 
     private func syncWindowPlatformOutlines() {
@@ -849,6 +946,7 @@ final class DesktopPhysicsScene: SKScene {
 
         addChild(player)
         playerNode = player
+        playerID = UUID().uuidString.lowercased()
         refreshDragInputCapture()
     }
 
@@ -875,6 +973,7 @@ final class DesktopPhysicsScene: SKScene {
         super.didSimulatePhysics()
         updatePlayerContacts()
         resolveWindowPlatformContact()
+        resolvePhonePlatformContact()
         resolveWindowSideContact()
         clampPlayerFallSpeedAfterPhysics()
         updatePlayerAnimation()
@@ -977,6 +1076,9 @@ final class DesktopPhysicsScene: SKScene {
     private func installBoundary() {
         playerBoundaryNode?.removeFromParent()
         playerBoundaryNode = nil
+        phonePlatformNode?.removeFromParent()
+        phonePlatformNode = nil
+        phonePlatforms = []
         guard size.width > 0, size.height > 0 else {
             physicsBody = nil
             return
@@ -984,16 +1086,59 @@ final class DesktopPhysicsScene: SKScene {
         let objectBoundary = SKPhysicsBody(edgeLoopFrom: CGRect(origin: .zero, size: size))
         objectBoundary.restitution = configuration.restitution
         objectBoundary.friction = 0.22
-        objectBoundary.categoryBitMask = Category.boundary
+        objectBoundary.categoryBitMask = Category.objectBoundary
         objectBoundary.collisionBitMask = Category.object
         physicsBody = objectBoundary
 
-        let playerPath = CGMutablePath()
-        playerPath.move(to: CGPoint(x: 0, y: size.height))
-        playerPath.addLine(to: .zero)
-        playerPath.addLine(to: CGPoint(x: size.width, y: 0))
-        playerPath.addLine(to: CGPoint(x: size.width, y: size.height))
-        let playerBoundary = SKPhysicsBody(edgeChainFrom: playerPath)
+        phoneSeamNode?.removeFromParent()
+        phoneSeamNode = nil
+        let playerBoundary: SKPhysicsBody
+        if let phoneRegion, let geometry = DesktopPhoneGeometry(macSize: size, phone: phoneRegion) {
+            phonePlatforms = geometry.stairPlatforms(maximumRise: min(80, playerJumpHeight * 0.4))
+            let steps = SKNode()
+            steps.name = "desktop-phone-steps"
+            steps.zPosition = 5
+            for platform in phonePlatforms {
+                let path = CGMutablePath()
+                path.move(to: CGPoint(x: platform.x, y: platform.y))
+                path.addLine(to: CGPoint(x: platform.x + platform.width, y: platform.y))
+                let line = SKShapeNode(path: path)
+                line.lineWidth = 3
+                line.strokeColor = .systemCyan
+                steps.addChild(line)
+            }
+            addChild(steps)
+            phonePlatformNode = steps
+            let segments = geometry.boundary.map { SKPhysicsBody(edgeFrom: $0.start, to: $0.end) }
+            playerBoundary = SKPhysicsBody(bodies: segments)
+            playerBoundary.isDynamic = false
+            let marker = SKNode()
+            marker.name = "desktop-phone-seam"
+            marker.zPosition = 100
+            for point in [geometry.seam.start, geometry.seam.end] {
+                let cap = CGMutablePath()
+                if geometry.seam.start.x == geometry.seam.end.x {
+                    cap.move(to: CGPoint(x: point.x - 9, y: point.y))
+                    cap.addLine(to: CGPoint(x: point.x + 9, y: point.y))
+                } else {
+                    cap.move(to: CGPoint(x: point.x, y: point.y - 9))
+                    cap.addLine(to: CGPoint(x: point.x, y: point.y + 9))
+                }
+                let line = SKShapeNode(path: cap)
+                line.lineWidth = 4
+                line.strokeColor = .systemCyan
+                marker.addChild(line)
+            }
+            addChild(marker)
+            phoneSeamNode = marker
+        } else {
+            let playerPath = CGMutablePath()
+            playerPath.move(to: CGPoint(x: 0, y: size.height))
+            playerPath.addLine(to: .zero)
+            playerPath.addLine(to: CGPoint(x: size.width, y: 0))
+            playerPath.addLine(to: CGPoint(x: size.width, y: size.height))
+            playerBoundary = SKPhysicsBody(edgeChainFrom: playerPath)
+        }
         playerBoundary.restitution = 0
         playerBoundary.friction = 0.22
         playerBoundary.categoryBitMask = Category.boundary
@@ -1003,6 +1148,24 @@ final class DesktopPhysicsScene: SKScene {
         node.physicsBody = playerBoundary
         addChild(node)
         playerBoundaryNode = node
+    }
+
+    private func resolvePhonePlatformContact() {
+        guard let playerNode, let body = playerNode.physicsBody,
+              let previousFoot = playerFootBeforePhysics,
+              objectDrag?.node !== playerNode, body.velocity.dy <= 0 else { return }
+        let foot = playerNode.position.y - playerHalfHeight
+        let candidates = phonePlatforms.filter {
+            previousFoot >= $0.y - 1 && foot <= $0.y + 1
+                && playerNode.position.x + playerHalfWidth > $0.x
+                && playerNode.position.x - playerHalfWidth < $0.x + $0.width
+        }
+        guard let platform = candidates.max(by: { $0.y < $1.y }) else { return }
+        playerNode.position.y = platform.y + playerHalfHeight
+        body.velocity.dy = 0
+        playerIsGrounded = true
+        lastGroundedAt = inputState.currentMonotonicTime()
+        jumpState.land()
     }
 
     private func updateCursor() {
@@ -1218,6 +1381,7 @@ final class DesktopPhysicsScene: SKScene {
                 guard category != Category.player,
                       category != Category.cursor,
                       category != Category.windowPlatform,
+                      category != Category.objectBoundary,
                       normal.dy >= minimumNormalY else { return }
                 foundGround = true
                 stop.pointee = true

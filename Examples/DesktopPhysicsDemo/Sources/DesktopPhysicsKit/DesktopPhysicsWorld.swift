@@ -58,6 +58,22 @@ public final class DesktopPhysicsWorld {
     public var isVisible: Bool { overlay.isVisible }
     public var objectCount: Int { sceneController.scene.objectCount }
     public var hasPlayer: Bool { sceneController.scene.hasPlayer }
+    public var phoneSnapshot: DesktopPhoneSnapshot { sceneController.scene.phoneSnapshot }
+    public var phoneRegion: CGRect? { sceneController.scene.phoneRegion }
+
+    public func setPhoneRegion(_ region: CGRect?) {
+        sceneController.scene.setPhoneRegion(region)
+    }
+
+    public func returnPhonePlayerToMac() {
+        sceneController.scene.returnPhonePlayerToMac()
+    }
+
+    public func setPhoneInput(_ input: DesktopPhoneInput) {
+        guard phoneRegion != nil else { return }
+        keyController.state.setPhoneInput(input)
+    }
+
     public var cursorCollisionEnabled: Bool { sceneController.scene.cursorCollisionEnabled }
     public var cursorColliderDiameter: CGFloat { sceneController.scene.cursorColliderDiameter }
     public var objectDraggingEnabled: Bool { sceneController.scene.objectDraggingEnabled }
@@ -194,6 +210,8 @@ public final class DesktopPhysicsWorld {
     }
 
     public func stop() {
+        setPhoneRegion(nil)
+        keyController.state.setPhoneInput(.released)
         keyController.stop()
         disableWindowPlatforms(message: "Window platforms are off.")
         sceneController.scene.setObjectDraggingEnabled(false)
