@@ -70,7 +70,7 @@ export function createServer(config) {
         let body = "";
         for await (const part of req) {
           body += part;
-          if (body.length > 16000)
+          if (Buffer.byteLength(body) > 65536)
             throw new RelayError(413, "Request too large");
         }
         let data;

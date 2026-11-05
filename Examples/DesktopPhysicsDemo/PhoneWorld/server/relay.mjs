@@ -1,35 +1,41 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 
 const released = () => ({ left: false, right: false, jump: false, run: false });
 const finite = (n, min, max) =>
   typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
+const identifier = (value) =>
+  typeof value === "string" && value.length > 0 && value.length <= 80;
+const geometry = (rect) =>
+  rect &&
+  finite(rect.x, -100000, 100000) &&
+  finite(rect.y, -100000, 100000) &&
+  finite(rect.width, 1, 10000) &&
+  finite(rect.height, 1, 10000);
+
 export class RelayError extends Error {
   constructor(status, message) {
     super(message);
     this.status = status;
   }
 }
+
 export class PhoneRelay {
   constructor({ secret, publicURL, now = Date.now }) {
     this.secret = secret;
     this.publicURL = publicURL;
     this.now = now;
     this.nativeAt = -Infinity;
-    this.phoneAt = -Infinity;
     this.snapshot = null;
-    this.layout = null;
     this.nativeID = null;
-    this.recoverSequence = 0;
     this.nativeSequence = -1;
+    this.recoverSequence = 0;
     this.rotate();
   }
   rotate() {
     this.token = randomBytes(24).toString("hex");
-    this.clientID = null;
-    this.phoneAt = -Infinity;
-    this.viewport = null;
-    this.input = released();
-    this.phoneSequence = -1;
+    this.phones = new Map();
+    this.blockedClients = new Set();
+    this.nextLabel = 1;
   }
   equal(a, b) {
     if (typeof a !== "string" || typeof b !== "string") return false;
@@ -40,34 +46,80 @@ export class PhoneRelay {
   get nativeOnline() {
     return this.now() - this.nativeAt < 1500;
   }
+  live(phone) {
+    return this.nativeOnline && this.now() - phone.at < 750;
+  }
   get phoneOnline() {
-    return this.nativeOnline && this.now() - this.phoneAt < 750;
+    return [...this.phones.values()].some((phone) => this.live(phone));
   }
-  get region() {
-    if (!this.phoneOnline || !this.snapshot || !this.viewport) return null;
-    const { width: mw, height: mh } = this.snapshot;
-    const width = Math.min(1600, Math.max(140, mh * this.layout.scale));
-    const height = Math.min(
-      1800,
-      Math.max(140, (width * this.viewport.height) / this.viewport.width),
-    );
-    const { edge, alignment: a } = this.layout;
-    if (edge === "right") return { x: mw, y: (mh - height) * a, width, height };
-    if (edge === "left")
-      return { x: -width, y: (mh - height) * a, width, height };
-    if (edge === "bottom")
-      return { x: (mw - width) * a, y: -height, width, height };
-    return { x: (mw - width) * a, y: mh, width, height };
+
+  validateSnapshot(snapshot) {
+    if (
+      !snapshot ||
+      !finite(snapshot.width, 100, 10000) ||
+      !finite(snapshot.height, 100, 10000) ||
+      !Array.isArray(snapshot.screens) ||
+      snapshot.screens.length > 8 ||
+      !Array.isArray(snapshot.seams) ||
+      snapshot.seams.length > 64
+    )
+      throw new RelayError(400, "Invalid world layout");
+    const ids = new Set(["mac"]);
+    for (const screen of snapshot.screens) {
+      if (
+        !identifier(screen.id) ||
+        ids.has(screen.id) ||
+        !geometry(screen) ||
+        ![0, 90].includes(screen.rotation ?? 0)
+      )
+        throw new RelayError(400, "Invalid world screen");
+      ids.add(screen.id);
+    }
+    for (const seam of snapshot.seams) {
+      if (
+        !ids.has(seam.from) ||
+        !ids.has(seam.to) ||
+        seam.from === seam.to ||
+        !["x1", "y1", "x2", "y2"].every((key) =>
+          finite(seam[key], -100000, 100000),
+        ) ||
+        !(
+          (seam.x1 === seam.x2 && seam.y1 !== seam.y2) ||
+          (seam.y1 === seam.y2 && seam.x1 !== seam.x2)
+        )
+      )
+        throw new RelayError(400, "Invalid world seam");
+    }
+    const player = snapshot.player;
+    if (
+      player !== null &&
+      (!player ||
+        !identifier(player.id) ||
+        !["left", "right"].includes(player.facing) ||
+        !["x", "y", "vx", "vy"].every((key) =>
+          finite(player[key], -100000, 100000),
+        ) ||
+        !finite(player.width, 1, 2048) ||
+        !finite(player.height, 1, 2048))
+    )
+      throw new RelayError(400, "Invalid player");
   }
+
   native(auth, data) {
     if (!this.equal(auth, this.secret))
       throw new RelayError(401, "Native authorization required");
     if (
       !data ||
-      typeof data.instanceID !== "string" ||
-      data.instanceID.length > 80 ||
+      !identifier(data.instanceID) ||
       !Number.isSafeInteger(data.sequence) ||
-      data.sequence < 0
+      data.sequence < 0 ||
+      typeof data.enabled !== "boolean" ||
+      (data.rotate !== undefined && typeof data.rotate !== "boolean") ||
+      (data.removeIDs !== undefined &&
+        (!Array.isArray(data.removeIDs) ||
+          data.removeIDs.length > 8 ||
+          !data.removeIDs.every(identifier) ||
+          new Set(data.removeIDs).size !== data.removeIDs.length))
     )
       throw new RelayError(400, "Invalid native instance");
     if (this.nativeOnline && this.nativeID !== data.instanceID)
@@ -77,67 +129,63 @@ export class PhoneRelay {
       data.sequence <= this.nativeSequence
     )
       return this.nativeReply();
-    if (!data.enabled) {
-      this.nativeSequence = data.sequence;
-      this.nativeAt = -Infinity;
-      this.snapshot = null;
-      this.rotate();
-      return {
-        connected: false,
-        nativeOnline: false,
-        input: released(),
-        region: null,
-        recoverSequence: this.recoverSequence,
-      };
+    if (data.enabled) this.validateSnapshot(data.snapshot);
+    const reset =
+      this.nativeID !== data.instanceID || data.rotate || !data.enabled;
+    if (reset) this.rotate();
+    for (const id of data.removeIDs ?? []) {
+      for (const [clientID, phone] of this.phones) {
+        if (phone.id === id) {
+          this.phones.delete(clientID);
+          this.blockedClients.add(clientID);
+        }
+      }
     }
-    const s = data.snapshot,
-      l = data.layout;
-    if (
-      !s ||
-      !finite(s.width, 100, 10000) ||
-      !finite(s.height, 100, 10000) ||
-      !l ||
-      !["left", "right", "top", "bottom"].includes(l.edge) ||
-      !finite(l.alignment, 0, 1) ||
-      !finite(l.scale, 0.2, 0.9)
-    )
-      throw new RelayError(400, "Invalid world layout");
-    if (s.player !== null) {
-      const p = s.player;
-      if (
-        !p ||
-        typeof p.id !== "string" ||
-        p.id.length > 80 ||
-        !["left", "right"].includes(p.facing) ||
-        !["x", "y", "vx", "vy"].every((k) => finite(p[k], -100000, 100000)) ||
-        !finite(p.width, 1, 2048) ||
-        !finite(p.height, 1, 2048)
-      )
-        throw new RelayError(400, "Invalid player");
-    }
-    if (this.nativeID !== data.instanceID || data.rotate) this.rotate();
-    this.nativeSequence = data.sequence;
     this.nativeID = data.instanceID;
-    this.nativeAt = this.now();
-    this.snapshot = s;
-    this.layout = l;
+    this.nativeSequence = data.sequence;
+    this.nativeAt = data.enabled ? this.now() : -Infinity;
+    this.snapshot = data.enabled ? structuredClone(data.snapshot) : null;
     return this.nativeReply();
   }
+
+  regionFor(phone) {
+    if (!this.live(phone)) return null;
+    const rect = this.snapshot?.screens.find(
+      (screen) => screen.id === phone.id,
+    );
+    return rect
+      ? {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+          rotation: rect.rotation ?? 0,
+        }
+      : null;
+  }
   nativeReply() {
+    const input = released();
+    for (const phone of this.phones.values()) {
+      if (!this.regionFor(phone) || this.now() - phone.at >= 400) continue;
+      for (const key of Object.keys(input)) input[key] ||= phone.input[key];
+    }
     return {
       connected: this.phoneOnline,
       nativeOnline: this.nativeOnline,
       joinURL: this.nativeOnline
         ? `${this.publicURL}#token=${this.token}`
         : null,
-      region: this.region,
-      input:
-        this.phoneOnline && this.now() - this.phoneAt < 400
-          ? this.input
-          : released(),
+      input,
       recoverSequence: this.recoverSequence,
+      phones: [...this.phones.values()].map((phone) => ({
+        id: phone.id,
+        label: phone.label,
+        connected: this.live(phone),
+        viewport: { ...phone.viewport },
+      })),
     };
   }
+
   phone(auth, data) {
     if (!this.equal(auth, this.token))
       throw new RelayError(401, "Scan the current QR code on the Mac");
@@ -153,27 +201,73 @@ export class PhoneRelay {
       !finite(data.viewport.height, 100, 5000) ||
       !data.input ||
       !["left", "right", "jump", "run"].every(
-        (k) => typeof data.input[k] === "boolean",
-      )
+        (key) => typeof data.input[key] === "boolean",
+      ) ||
+      (data.recover !== undefined && typeof data.recover !== "boolean")
     )
       throw new RelayError(400, "Invalid phone input");
-    if (this.phoneOnline && this.clientID !== data.clientID)
-      throw new RelayError(409, "Another phone is connected");
-    if (this.clientID !== data.clientID) this.phoneSequence = -1;
-    if (data.sequence > this.phoneSequence) {
-      this.clientID = data.clientID;
-      this.phoneAt = this.now();
-      this.viewport = data.viewport;
-      this.input = data.input;
-      this.phoneSequence = data.sequence;
-      if (data.recover) this.recoverSequence++;
+    if (this.blockedClients.has(data.clientID))
+      throw new RelayError(410, "Phone removed from this session");
+    let phone = this.phones.get(data.clientID);
+    if (!phone) {
+      if (this.phones.size >= 8)
+        throw new RelayError(
+          409,
+          "Eight phone screens are already paired. Reset the session on the Mac to pair different screens.",
+        );
+      phone = {
+        id: randomUUID(),
+        label: `Phone ${this.nextLabel++}`,
+        at: -Infinity,
+        sequence: -1,
+        viewport: { ...data.viewport },
+        input: released(),
+      };
+      this.phones.set(data.clientID, phone);
     }
+    if (data.sequence > phone.sequence) {
+      phone.at = this.now();
+      phone.sequence = data.sequence;
+      phone.viewport = { ...data.viewport };
+      phone.input = { ...data.input };
+      if (data.recover && this.regionFor(phone)) this.recoverSequence++;
+    }
+    const labels = new Map(
+      [...this.phones.values()].map((item) => [item.id, item.label]),
+    );
+    const region = this.regionFor(phone);
+    const seams = region
+      ? this.snapshot.seams
+          .filter((seam) => seam.from === phone.id || seam.to === phone.id)
+          .map((seam) => {
+            const neighborID = seam.from === phone.id ? seam.to : seam.from;
+            return {
+              x1: seam.x1,
+              y1: seam.y1,
+              x2: seam.x2,
+              y2: seam.y2,
+              neighborID,
+              label:
+                neighborID === "mac"
+                  ? "To Mac"
+                  : `To ${labels.get(neighborID) ?? "phone"}`,
+            };
+          })
+          .filter(
+            (seam) =>
+              seam.neighborID === "mac" ||
+              [...this.phones.values()].some(
+                (item) => item.id === seam.neighborID && this.regionFor(item),
+              ),
+          )
+      : [];
     return {
       nativeOnline: this.nativeOnline,
-      connected: this.phoneOnline,
-      snapshot: this.nativeOnline ? this.snapshot : null,
-      region: this.region,
-      edge: this.layout?.edge ?? "right",
+      connected: this.live(phone),
+      phone: { id: phone.id, label: phone.label },
+      snapshot: this.nativeOnline ? structuredClone(this.snapshot) : null,
+      region,
+      seams,
     };
   }
 }

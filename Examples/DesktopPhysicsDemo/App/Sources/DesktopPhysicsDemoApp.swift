@@ -13,7 +13,9 @@ struct DesktopPhysicsDemoApp: App {
         WindowGroup("Desktop Physics Demo", id: "main") {
             ContentView(model: model)
                 .onAppear {
-                    model.startIfNeeded()
+                    if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+                        model.startIfNeeded()
+                    }
                 }
         }
         .windowResizability(.contentSize)
@@ -21,7 +23,7 @@ struct DesktopPhysicsDemoApp: App {
         .commands {
             DemoCommands()
         }
-        Window("Phone screen", id: "phone") {
+        Window("Phone screens", id: "phone") {
             if let connection = model.phoneConnection {
                 PhoneWorldView(connection: connection)
             } else {
@@ -96,7 +98,7 @@ private struct DemoCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .windowArrangement) {
-            Button("Show Phone Screen") { openWindow(id: "phone") }
+            Button("Show Phone Screens") { openWindow(id: "phone") }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
             Button("Show Desktop Physics Controls") {
                 openWindow(id: "main")

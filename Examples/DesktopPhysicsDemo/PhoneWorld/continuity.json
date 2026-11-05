@@ -4,16 +4,16 @@
   "product": "Desktop Phone World",
   "interaction": {
     "kind": "projection",
-    "trigger": "Walk or jump across the shared opening"
+    "trigger": "Walk or jump across an opening between any two connected screens"
   },
   "states": {
     "source": {
-      "id": "mac",
-      "representation": "Native SpriteKit player in Mac rectangle"
+      "id": "screen-a",
+      "representation": "Native player projected in one active screen"
     },
     "target": {
-      "id": "phone",
-      "representation": "Canvas projection of same player in adjacent phone rectangle"
+      "id": "screen-b",
+      "representation": "Same player projected into an adjoining Mac or phone screen"
     }
   },
   "semanticFamily": {
@@ -39,14 +39,14 @@
     "relationships": [
       {
         "key": "regions",
-        "label": "Adjacent Mac and phone rectangles"
+        "label": "Root-connected graph of Mac and numbered phone rectangles"
       }
     ]
   },
   "workingState": [
     {
       "key": "layout",
-      "label": "Side alignment and scale"
+      "label": "Stable phone identities, rectangle positions and sizes"
     }
   ],
   "controls": [
@@ -106,9 +106,9 @@
     }
   ],
   "paths": {
-    "forward": "The same native player crosses the open shared boundary; the phone clips its world coordinates.",
-    "reverse": "Walk or jump across the same opening back; identity, velocity and jump state persist.",
-    "interruption": "Latest geometry owns the opening; stale input expires and unavailable phone returns the character to Mac.",
+    "forward": "The same native player crosses a shared opening; each renderer clips its own active region.",
+    "reverse": "Walk or jump across connected phone screens back to the Mac without replacing the character.",
+    "interruption": "Cancel a drag when its source rotates or disappears. Atomic topology changes deactivate disconnected components and rescue only stranded characters.",
     "fallback": "Disconnect closes the seam and rescues the same player to the Mac; labelled Return to Mac provides recovery.",
     "reducedMotion": "No decorative transition; both views draw the current authoritative frame."
   },
@@ -140,7 +140,7 @@
   },
   "checkpoints": {
     "start": "One native character inside Mac region.",
-    "midpoint": "Same ID spans the seam; each renderer clips its own visible part.",
+    "midpoint": "One ID spans the seam between any two connected screens, clipped by each viewport. Drag ghosts do not change live geometry.",
     "settled": "Phone draws same frame and pose while Mac simulation remains authoritative.",
     "reverse": "Same native node returns to Mac.",
     "interrupted": "Stale inputs released, latest region used, offscreen player rescued if disconnected.",

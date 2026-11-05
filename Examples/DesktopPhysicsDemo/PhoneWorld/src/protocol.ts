@@ -30,8 +30,22 @@ export type PhoneState = {
     player: Player | null;
     platforms?: { x: number; y: number; width: number }[];
   } | null;
-  region: { x: number; y: number; width: number; height: number } | null;
-  edge: "left" | "right" | "bottom" | "top";
+  region: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    rotation?: 0 | 90;
+  } | null;
+  phone: { id: string; label: string };
+  seams: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    neighborID: string;
+    label: string;
+  }[];
 };
 
 export const releasedInput = (): Input => ({
@@ -53,7 +67,16 @@ export function parsePhoneState(value: unknown): PhoneState {
       (!state.snapshot ||
         !finite(state.snapshot.width) ||
         !finite(state.snapshot.height))) ||
-    !["left", "right", "bottom", "top"].includes(state.edge)
+    !state.phone ||
+    typeof state.phone.id !== "string" ||
+    typeof state.phone.label !== "string" ||
+    !Array.isArray(state.seams) ||
+    state.seams.some(
+      (seam) =>
+        ![seam.x1, seam.y1, seam.x2, seam.y2].every(finite) ||
+        typeof seam.neighborID !== "string" ||
+        typeof seam.label !== "string",
+    )
   )
     throw new Error("Invalid world response");
   if (
@@ -65,7 +88,8 @@ export function parsePhoneState(value: unknown): PhoneState {
       state.region.height,
     ].every(finite) ||
       state.region.width <= 0 ||
-      state.region.height <= 0)
+      state.region.height <= 0 ||
+      ![0, 90].includes(state.region.rotation ?? 0))
   )
     throw new Error("Invalid phone region");
   const p = state.snapshot?.player;

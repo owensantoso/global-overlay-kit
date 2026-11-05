@@ -56,12 +56,9 @@ export function App() {
         : releasedInput(),
     );
   }, []);
-  const { connection, world, returnToMac, reconnect } = usePhoneConnection(
-    viewport,
-    input,
-    clearInput,
-  );
-  const ready = connection === "online";
+  const { connection, world, phone, returnToMac, reconnect } =
+    usePhoneConnection(viewport, input, clearInput);
+  const ready = connection === "online" && !!world?.region;
 
   useEffect(() => {
     enabled.current = ready;
@@ -123,12 +120,13 @@ export function App() {
   };
 
   const status = {
-    online: "Connected",
+    online: ready ? "Connected" : "Needs placement",
     connecting: "Waiting for Mac…",
     offline: "Reconnecting…",
     invalid: "Pairing needed",
-    occupied: "Another phone is connected",
+    occupied: "Session is full",
     paused: "Paused",
+    removed: "Removed from session",
   }[connection];
   const player = world?.snapshot?.player;
   const region = world?.region;
@@ -144,22 +142,36 @@ export function App() {
   let message = "";
   if (connection === "invalid")
     message = "Scan a new QR code in Desktop Physics Demo on your Mac.";
+  else if (connection === "removed")
+    message = "This phone was removed. Scan the QR code to join again.";
   else if (connection === "occupied")
-    message = "Disconnect the other phone, then retry.";
+    message = "Remove a screen or reset the session on the Mac, then retry.";
   else if (connection === "offline")
     message = "Keep this phone and your Mac connected to Tailscale.";
   else if (connection === "connecting")
     message = "Open Desktop Physics Demo and connect a phone screen.";
+  else if (connection === "online" && !region)
+    message = "Connect this screen in the Mac layout.";
   else if (ready && !player) message = "Spawn a player on your Mac.";
-  else if (ready && !inPhone) message = "Character is on the Mac";
+  else if (ready && !inPhone)
+    message =
+      player &&
+      world?.snapshot &&
+      player.x >= 0 &&
+      player.x <= world.snapshot.width &&
+      player.y >= 0 &&
+      player.y <= world.snapshot.height
+        ? "Character is on the Mac"
+        : "Character is on another screen";
 
   return (
     <main className="app" data-connection={connection}>
       <header className="header">
-        <h1>Phone world</h1>
+        <h1>{phone?.label ?? "Phone world"}</h1>
         <p className="connection" role="status">
           <span className="status-dot" aria-hidden="true" />
           {status}
+          {ready && world?.region?.rotation === 90 && " · Rotated view"}
         </p>
       </header>
       <WorldView world={world} message={message} onResize={setViewport} />

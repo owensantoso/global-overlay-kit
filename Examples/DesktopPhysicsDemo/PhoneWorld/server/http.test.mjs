@@ -51,6 +51,8 @@ test("HTTP companion serves the private phone projection and bounds pairing inpu
       asset: null,
     },
     platforms: [],
+    screens: [],
+    seams: [],
   };
   let nativeSequence = 0;
   let token;
@@ -60,7 +62,6 @@ test("HTTP companion serves the private phone projection and bounds pairing inpu
     sequence: ++nativeSequence,
     enabled: true,
     snapshot,
-    layout: { edge: "right", alignment: 0, scale: 0.4 },
   });
   const post = (path, capability, body, headers = {}) =>
     fetch(url(path), {
@@ -149,8 +150,29 @@ test("HTTP companion serves the private phone projection and bounds pairing inpu
         const phoneReply = await phone.json();
         assert.equal(phoneReply.connected, true);
         assert.equal(phoneReply.snapshot.player.id, snapshot.player.id);
-        assert.equal(phoneReply.region.x, snapshot.width);
-        assert.equal(phoneReply.region.y, 0);
+        assert.equal(phoneReply.region, null);
+        assert.equal(phoneReply.phone.label, "Phone 1");
+        snapshot.screens = [
+          { id: phoneReply.phone.id, x: 1200, y: 0, width: 320, height: 530 },
+        ];
+        snapshot.seams = [
+          {
+            from: "mac",
+            to: phoneReply.phone.id,
+            x1: 1200,
+            y1: 0,
+            x2: 1200,
+            y2: 530,
+          },
+        ];
+        await post("api/native", secret, nativeBody());
+        const placed = await post("api/phone", token, {
+          clientID: "http-test-phone",
+          sequence: 2,
+          viewport: { width: 390, height: 650 },
+          input: { ...released, right: true, jump: true },
+        });
+        assert.equal((await placed.json()).region.x, snapshot.width);
 
         const status = await fetch(url("api/native-status"), {
           headers: { Authorization: `Bearer ${secret}` },
@@ -166,6 +188,105 @@ test("HTTP companion serves the private phone projection and bounds pairing inpu
           nativeOnline: true,
           phoneOnline: true,
         });
+      },
+    );
+
+    await t.test(
+      "one QR admits simultaneous independently identified screens over real HTTP",
+      async () => {
+        const [twoResponse, threeResponse] = await Promise.all([
+          post("api/phone", token, {
+            clientID: "http-second-phone",
+            sequence: 1,
+            viewport: { width: 844, height: 280 },
+            input: released,
+          }),
+          post("api/phone", token, {
+            clientID: "http-third-phone",
+            sequence: 1,
+            viewport: { width: 400, height: 700 },
+            input: released,
+          }),
+        ]);
+        assert.equal(twoResponse.status, 200);
+        assert.equal(threeResponse.status, 200);
+        const two = await twoResponse.json(),
+          three = await threeResponse.json();
+        assert.notEqual(two.phone.id, three.phone.id);
+        assert.deepEqual([two.phone.label, three.phone.label].sort(), [
+          "Phone 2",
+          "Phone 3",
+        ]);
+        snapshot.screens.push(
+          { id: two.phone.id, x: 1520, y: 0, width: 500, height: 166 },
+          { id: three.phone.id, x: 2020, y: 0, width: 320, height: 560 },
+        );
+        snapshot.seams.push(
+          {
+            from: snapshot.screens[0].id,
+            to: two.phone.id,
+            x1: 1520,
+            y1: 0,
+            x2: 1520,
+            y2: 166,
+          },
+          {
+            from: two.phone.id,
+            to: three.phone.id,
+            x1: 2020,
+            y1: 0,
+            x2: 2020,
+            y2: 166,
+          },
+        );
+        const native = await post("api/native", secret, nativeBody());
+        const descriptors = (await native.json()).phones;
+        assert.equal(descriptors.length, 3);
+        assert.deepEqual(
+          descriptors.find((p) => p.id === two.phone.id).viewport,
+          { width: 844, height: 280 },
+        );
+        const resumed = await post("api/phone", token, {
+          clientID: "http-second-phone",
+          sequence: 2,
+          viewport: { width: 844, height: 280 },
+          input: { ...released, left: true },
+        });
+        const resumedBody = await resumed.json();
+        assert.deepEqual(resumedBody.phone, two.phone);
+        assert.equal(resumedBody.region.x, 1520);
+        assert.deepEqual(
+          resumedBody.seams.map((s) => s.neighborID),
+          [snapshot.screens[0].id, three.phone.id],
+        );
+      },
+    );
+
+    await t.test(
+      "explicit per-phone removal blocks old polling without evicting other screens",
+      async () => {
+        const id = snapshot.screens[0].id;
+        const response = await post("api/native", secret, {
+          ...nativeBody(),
+          removeIDs: [id],
+        });
+        const current = await response.json();
+        assert.equal(current.phones.length, 2);
+        assert.ok(current.phones.every((p) => p.id !== id));
+        const removed = await post("api/phone", token, {
+          clientID: "http-test-phone",
+          sequence: 10,
+          viewport: { width: 390, height: 650 },
+          input: released,
+        });
+        assert.equal(removed.status, 410);
+        const fresh = await post("api/phone", token, {
+          clientID: "http-new-scan-phone",
+          sequence: 1,
+          viewport: { width: 390, height: 650 },
+          input: released,
+        });
+        assert.equal((await fresh.json()).phone.label, "Phone 4");
       },
     );
 
@@ -189,9 +310,14 @@ test("HTTP companion serves the private phone projection and bounds pairing inpu
         });
         assert.equal(contentType.status, 415);
         const oversized = await post("api/phone", token, {
-          padding: "x".repeat(16001),
+          padding: "x".repeat(65537),
         });
         assert.equal(oversized.status, 413);
+        const boundedNative = await post("api/native", secret, {
+          ...nativeBody(),
+          padding: "x".repeat(20000),
+        });
+        assert.equal(boundedNative.status, 200);
         const method = await fetch(url("api/phone"));
         assert.equal(method.status, 405);
       },

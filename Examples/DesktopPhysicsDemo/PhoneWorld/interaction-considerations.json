@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "file": "PhoneWorldView.swift",
+    "sha256": "705f0ab317c1bc765a60feecf9af176e48ac521bbbe2b05e899f12287709500b"
+  },
+  "decisions": [
+    {
+      "id": "wheel-adjustment:70:17",
+      "disposition": "decline",
+      "goal": "Arrange screens without accidental scale changes while scrolling the Phone screens window.",
+      "benefit": "Wheel adjustment could reduce acquisition effort for the selected screen scale.",
+      "rationale": "The native scale slider sits in the vertical scroll path; keep wheel/trackpad scrolling for the window. See DESIGN.md.",
+      "tradeoff": "Scale uses native dragging and keyboard operation.",
+      "testScenario": "Scroll over the scale control: the window scrolls without changing the scale; focus the slider and use arrow keys to adjust it."
+    }
+  ]
+}
